@@ -1,0 +1,16 @@
+# Name:			INSTRUCTIONS.txt
+# Summary:		External use guidelines.
+# Desc:			Contains what anyone needs to know in order to analyse measurement data (use the code).
+#
+#				Due to differences in file formatting, such as indents, Notepad++ is recommended when viewing both scripts and guidelines.
+#
+# Created: 		Oct. 31st, 2022, Risa Philpott
+# Last Edited: 	Oct. 31st, 2022, Risa Philpott
+
+INSTRUCTIONS
+
+Overview 
+  This repo allows you to analyse measurement data. ...
+  
+	Limitations
+	  List any external restrictions or requirements here, such as lab equipment or procedure used, or input formatting.
