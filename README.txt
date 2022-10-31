@@ -28,10 +28,9 @@ Overview
 Limitations (Might delete)
   List any internal restrictions or requirements (regarding the entire repo) here, such as python version compatibilty.
 
-Build
-  How to run the code.
-  
-  
+Known Issues
+  - in cvsParser.py, on Windows,
+		"file = open(csvPath, 'r')" -> "file = open(csvPath, 'r', encoding = 'utf8')"
 
 
 TEMPLATES

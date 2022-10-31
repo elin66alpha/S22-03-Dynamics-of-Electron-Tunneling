@@ -1,6 +1,8 @@
 # Mihir Savadi
 # 23rd February 2021
 
+#Oct. 31st, 2022, Risa Philpott
+
 from lib import *
 
 class csvParser : 
@@ -19,7 +21,7 @@ class csvParser :
 
         # converting the input csv to a list of lines represented as strings, for the other private methods to use
         # 'lines' is a list where each entry represents a line in the csv
-        file = open(csvPath, 'r')
+        file = open(csvPath, 'r', encoding = 'utf8')  #to run on windows, OG was open(csvPath, 'r')
 
         self._lines = [line for line in file]
 

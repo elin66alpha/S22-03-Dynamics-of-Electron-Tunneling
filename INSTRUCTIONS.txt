@@ -14,3 +14,19 @@ Overview
   
 	Limitations
 	  List any external restrictions or requirements here, such as lab equipment or procedure used, or input formatting.
+	  
+	  
+Run Code
+  
+  1. if not already installed, need to pip install 
+	numpy
+	matplotlib 
+	pandas
+	scipy
+	reportlab, https://pypi.org/project/reportlab/
+	seaborn
+	tqdm
+  2. run __main__.py (not Keithley)
+	   since in dataProccessingSript dir, DID NOT RUN because need access to other folders
+	   so need to run __main__ from repo dir, not from __main__ dir.
+  4. done! report is generated
