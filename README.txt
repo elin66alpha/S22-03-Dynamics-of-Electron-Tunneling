@@ -28,7 +28,6 @@ Files Structure
 	\README.txt - contains developer guidelines
 
 Datatype Structure
-	
 
 
 GUIDELINES
@@ -53,6 +52,12 @@ Known Issues
 Resources
   - consider not storing resource data on the cloud, as it is unnecessary and clogs up git commits. 
   - cloud (repo) storage is limited.
+
+
+Script Interaction
+  script files call other script files
+  
+Script 1 (header for each script file to be explained here)
 
 
 TEMPLATES
