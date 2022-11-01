@@ -17,6 +17,8 @@ Overview
 	  
 	  
 Run Code
+
+  "python scripts/analysis/__main__.py"
   
   1. if not already installed, need to pip install 
 	numpy

@@ -9,6 +9,24 @@
 
 ORGANIZATION
 
+Code Execution Steps
+  1. Process raw measurement data.
+  2. Analyze processed measurement data.
+
+Files Structure
+	\scripts\ - for scripts
+		processing - previously Keithley
+		analysis - previously dataProcessingScript
+	\resources\ - for resources, such as input and output data
+		analysis_reports\ - output reports generated when code is run, populated automatically
+		processed_data\ - csv files containing processed version of raw measurement data, populated automatically
+	\old_guidelines\ - for previous team's guidelines, temporary aka will delete when not needed anymore
+	\.gitignore - to configure what files git ignores, update to include unnecessary data, as necessary
+	\LICENSE - outdated license outlining repo fair use 
+	\README.md - first repo file immediately visible to public, aka external stakeholders
+	\INSTRUCTIONS.txt - contains repo use instructions
+	\README.txt - contains developer guidelines
+
 Datatype Structure
 	
 
@@ -31,6 +49,10 @@ Limitations (Might delete)
 Known Issues
   - in cvsParser.py, on Windows,
 		"file = open(csvPath, 'r')" -> "file = open(csvPath, 'r', encoding = 'utf8')"
+
+Resources
+  - consider not storing resource data on the cloud, as it is unnecessary and clogs up git commits. 
+  - cloud (repo) storage is limited.
 
 
 TEMPLATES
