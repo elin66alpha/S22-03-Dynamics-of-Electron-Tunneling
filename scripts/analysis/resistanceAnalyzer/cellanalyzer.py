@@ -198,6 +198,30 @@ class CellAnalyzer:
 
             return self.df['AV'][idx] / self.df['Time'][idx]
 
+    @cached_property
+    def energy_input(self) -> np.ndarray:
+        """Calculates the amount of energy being input into the system as a cumulative distribution
+        only works on observe and reset at this point in time, but can be modified to add support if
+        needed for other modes."""
+
+
+        if not self.activity() in ['observe', 'reset']:
+            raise Exception(f"energy_input() called on data from not from observe or reset")
+
+        
+        time = self.df['Time']
+        i = self.df['AI']
+        v = self.df['AV']
+
+
+        #calculate the length of each timestep using a discrete first order derivative
+        dt = np.convolve(time, np.array(-1, 0, 1), mode='same')
+
+        e = i * v * dt
+        e = np.cumsum(e, 0)
+        return e
+
+
 
     def plot(self, outfile: str):
         """Plots IV-curve annotated with what the algorithm interpreted from the data, and saves in `outfile`"""
