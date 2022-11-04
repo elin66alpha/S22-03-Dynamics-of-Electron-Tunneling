@@ -1,0 +1,34 @@
+# Name:			INSTRUCTIONS.txt
+# Summary:		External use guidelines.
+# Desc:			Contains what anyone needs to know in order to analyse measurement data (use the code).
+#
+#				Due to differences in file formatting, such as indents, Notepad++ is recommended when viewing both scripts and guidelines.
+#
+# Created: 		Oct. 31st, 2022, Risa Philpott
+# Last Edited: 	Oct. 31st, 2022, Risa Philpott
+
+INSTRUCTIONS
+
+Overview 
+  This repo allows you to analyse measurement data. ...
+  
+	Limitations
+	  List any external restrictions or requirements here, such as lab equipment or procedure used, or input formatting.
+	  
+	  
+Run Code
+
+  "python scripts/analysis/__main__.py"
+  
+  1. if not already installed, need to pip install 
+	numpy
+	matplotlib 
+	pandas
+	scipy
+	reportlab, https://pypi.org/project/reportlab/
+	seaborn
+	tqdm
+  2. run __main__.py (not Keithley)
+	   since in dataProccessingSript dir, DID NOT RUN because need access to other folders
+	   so need to run __main__ from repo dir, not from __main__ dir.
+  4. done! report is generated
