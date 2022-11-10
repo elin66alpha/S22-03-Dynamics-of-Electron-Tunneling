@@ -116,3 +116,5 @@ class csvParser :
                 columns[j].append(float(splitLine[j]))
 
         return columns
+
+        
