@@ -149,6 +149,10 @@ class CellAnalyzerReport:
             
             else:
                 props['Error'] = 'Too nonlinear/failed'
+            
+            #test code not to be merged
+            ca.plot_energy(f'{self.tmpDir}/ca_plot_energy{i}.png')
+            flowables.append(self.__getImage(f'{self.tmpDir}/ca_plot_energy{i}.png', width=400))
 
         else:
             # successful set/form

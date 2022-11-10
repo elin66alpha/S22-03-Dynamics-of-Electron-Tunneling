@@ -198,6 +198,47 @@ class CellAnalyzer:
 
             return self.df['AV'][idx] / self.df['Time'][idx]
 
+    
+    def energy_input(self) -> np.ndarray:
+        """Calculates the amount of energy being input into the system as a cumulative distribution
+        only works on successful resets at this time, as the voltage at compliance current is not
+        properly handled yet"""
+
+
+        if not self.activity() in ['observe', 'reset']:
+            raise Exception(f"energy_input() called on data from not from observe or reset")
+
+        
+        time = self.df['Time']
+        i = self.df['AI']
+        v = np.abs(self.df['AV'])
+
+
+        #calculate the length of each timestep using a discrete first order derivative
+        dt = np.convolve(time, np.array([-0.5, 0, 0.5]), mode='same')
+
+        e = i * v * dt
+        e = np.cumsum(e, 0)
+        #the last measurement in the array will have a large negative time value so to keep things simple
+        #the last value in the distribution is just set to match the one immediately prior
+        e[len(e) - 1] = e[len(e) - 2]
+        return e
+
+    def plot_energy(self, outfile: str):
+        
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set_palette('pastel')
+        
+        fig = plt.figure(figsize=(10, 4), dpi=300)
+        fig.patch.set_facecolor('white')
+        sns.lineplot(x=self.df.Time, y=self.energy_input())
+        plt.xlabel("Time (seconds)")
+        plt.ylabel("Energy (J)")
+
+        plt.savefig(outfile)
+        plt.close()
+        
 
     def plot(self, outfile: str):
         """Plots IV-curve annotated with what the algorithm interpreted from the data, and saves in `outfile`"""
