@@ -1,4 +1,4 @@
-# Name:			README.txt
+# Name:			internal_guidelines.txt
 # Summary:		Dev guidelines
 # Desc:			Contains internal guidelines, containing everything a scripter needs to know to use, maintain, and expand code.
 #
