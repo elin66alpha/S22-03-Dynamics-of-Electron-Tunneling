@@ -1,5 +1,9 @@
-# Mihir Savadi 24th February 2021
+# Name:			base.py
+# Summary:		Generates a report for EVERY CSV file.
+#
+# Creator: 		Mihir Savadi
 
+#import 
 from resistanceAnalyzer.report import CellAnalyzerReport
 from lib import *
 from utils.csvItem import csvItem
@@ -8,16 +12,24 @@ from pdfGenerator.pdfgen import pdfGen
 
 from tqdm import tqdm
 
+# Name:			dataBaseCollator
+# Summary:		Datatype for __.
+# Desc:			This class employs the csvItem and pdfGen class to provide a single wrapper to deal with the entire database in one shot.
+# Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
 class dataBaseCollator :
-    """ This class employs the csvItem and pdfGen class to provide a single wrapper to deal with the entire database
-        in one shot.
-    """
-
+    # Name:			__init__
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		Path to the processed raw Keithley data CSVs, as a string.
+    #               Path of where to store the generated reports, as a string.
+    # Output:		None.
     def __init__(self, pathToData: str, pathToDump: str) :
-
+        #store paths
         self.pathToData       = pathToData
         self.pathToDumpReport = pathToDump
-        os.makedirs(self.pathToDumpReport)
+        os.makedirs(self.pathToDumpReport)  #convert string to a path datatype
 
         # first convert all csv's in the data base into a list csvItem objects
         self.csvData = self.__organizeCSVs()
@@ -30,7 +42,13 @@ class dataBaseCollator :
             pdfGen(value, self.summaryDict, self.pathToDumpReport)
             CellAnalyzerReport(value, self.summaryDict, self.pathToDumpReport).generateReport()
 
-
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __organizeCSVs(self) -> OrderedDict :
         """Takes in the path where all the CSV's are, and spits an ordered dictionary where each entry contains time
         ordered list of csvItem's for only one cell. There is an entry for every cell.
@@ -71,6 +89,13 @@ class dataBaseCollator :
 
         return cellDataDict
         
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.       
     def __generateSummaryReport(self) -> dict:
         """Generates a summary report as a text file at the 'pathToDumpReport' directory. Includes information about
             the cells accessed, their size, when it was last accessed, and number of times stimulated. Returns a dict

@@ -67,8 +67,7 @@ Files
 # Name:			.
 # Summary:		.
 #
-# Created: 		.
-# Last Edited: 	.
+# Creator: 		.
 
 Methods, Classes, etc
 

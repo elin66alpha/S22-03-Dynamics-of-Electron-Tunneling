@@ -1,108 +1,106 @@
-# Mihir Savadi
-# 23rd February 2021
-
-#Oct. 31st, 2022, Risa Philpott
+# Name:			.
+# Summary:		Datatype containing methods to parse a CSV file.
+# Desc:         This file contains functions to extract comments, title row, and columns from each csv, according to the format
+#               established in the project summary document.
+#
+# Creator: 		Mihir Savadi
 
 from lib import *
 
+# Name:			csvParser
+# Summary:		Datatype for a CSV file. 
+# Desc:			.
+# Refinement:	Make this a datatype for a csv file, then have methods to parse SEPERATE from object init.
 class csvParser : 
-    """This file contains functions to extract comments, title row, and columns from each csv, according to the format
-        established in the project summary document.
-    """
 
+    # Name:			__init__
+    # Summary:		Creates a CSV file object.
+    # Desc:			Creates instance variables for the file's comments, column titles, and column data. 
+    #               
+    #               Creates list of lines represented as strings. Each entry is one file line. This is used to populate these
+    #               instance variables. The comments, titles, and data respectively are extracted from the file.
+    # Refinement:	.
+    #
+    # Input:		The CSV file path, as a string.
+    # Output:		None.
     def __init__(self, csvPath: str) :
-        """Constructor that creates an object containing the comments, title, and columns of the csv in question
-
-        Parameters
-        ----------
-        csvPath : str
-            the path to the csv in question
-        """
-
-        # converting the input csv to a list of lines represented as strings, for the other private methods to use
-        # 'lines' is a list where each entry represents a line in the csv
-        file = open(csvPath, 'r', encoding = 'utf8')  #to run on windows, OG was open(csvPath, 'r')
-
+        #parse file into lines 
+        file = open(csvPath, 'r', encoding = 'utf8')  #open the file 
+                                                      #to run on windows, OG was open(csvPath, 'r')
         self._lines = [line for line in file]
-
         self.__lastCommentLineIdx = -1 # this is modified by self.__extractTitle() if comments are included
+        file.close()  #close the file
 
-        file.close()
-
-        # all the public fields
+        #store path
         self.path     = csvPath
-
-        # these need to be excecuted in order here since methods have order dependency
-        self.comments = self.__extractComments()
-        self.title    = self.__extractTitle()
-        self.columns  = self.__extractColumns()
-
-    def __extractComments(self) -> str :
-        """Returns string of comments in a csv
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        str
-            the comment in the csv in question
-        """
-        comments = ''
-
-        # for case that comments were added
-
-        if self._lines[0].replace(" ", "") == '---\n' :
         
-            commentsStarted = False
-            for i, line in enumerate(self._lines) :
+        #extract and store file 
+        # need to be excecuted in this order here, since methods have order dependency
+        self.comments = self.__extractComments()
+        self.title    = self.__extractColumnTitles()
+        self.columns  = self.__extractColumnData()
 
+    # Name:			__extractComments
+    # Summary:		Search file for comments.
+    # Desc:			Uses file lines instance variable to search for any comments.
+    #               Assumes comments only exist, were appended, before the measurement data, and the lines immediately before and after 
+    #               the comments are exactly "---".
+    #               Checks if the first line of the file must be "---". If not, it is assumed no comments exist.
+    # Refinement:	.
+    #
+    # Input:		None.
+    # Output:		The comments, as a string. When no comments, result is "No comments were added.", as opposed to an empty string.
+    def __extractComments(self) -> str :
+        comments = ''  #result
+
+        #check first line of file
+        if self._lines[0].replace(" ", "") == '---\n' :  #when comments exist
+            commentsStarted = False
+            for i, line in enumerate(self._lines) :  #extract lines until see "---" indicator
                 if line.replace(" ", "") == '---\n' and commentsStarted == False :
                     commentsStarted = True
                     continue
-                    
                 if commentsStarted == True :
                     if line.replace(" ", "") == '---\n' :
                         self.__lastCommentLineIdx = i
                         break
                     else:
-                        comments += line
+                        comments += line  #append line to result
 
             if comments[-1] == '\n':
                 comments = comments[:-1]
 
-        else :
-
+        else :  #when comments do not exist
             comments = "No comments were added."
 
+        #done
         return comments
-
-    def __extractTitle(self) -> typing.List[str] :
-        """Returns the Title of the CSV in question
-
-        Returns
-        -------
-        str
-            a list of strings, where each entry is the title of the respective column of the csv
-            
-        """
         
+    # Name:			__extractColumnTitles
+    # Summary:		Search file for column titles.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		None.
+    # Output:		The titles, as a list of strings. Each entry is the title of the respective column of the csv.
+    def __extractColumnTitles(self) -> typing.List[str] :    
         return self._lines[self.__lastCommentLineIdx+1][:-1].split(',')
 
-    def __extractColumns(self) -> typing.List[typing.List[float]] :
-        """Returns the columns of data from the CSV in question
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        List[List[float]]
-            a list of lists, where each entry in each secondary list is a float. Each secondary list represents the
-            respective column of the CSV
-        """
-        columns = []
-        firstLine = self._lines[self.__lastCommentLineIdx+2][:-1].split(',')
+    # Name:			__extractColumnData
+    # Summary:		Searches file for column data.
+    # Desc:			Splits lines of data.
+    #
+    #               Assumes extracted comments from file first, as the column data starts after the comments.
+    # Refinement:	Add error checking for if comments have been sucessfully extracted yet.
+    #
+    # Input:		None.
+    # Output:		The columns of data (List[List[float]]), as a list of lists, where each entry in each secondary list is 
+    #               a float. Each secondary list represents the respective column of the CSV
+    def __extractColumnData(self) -> typing.List[typing.List[float]] :
+        columns = []  #result
+        
+        #search
+        firstLine = self._lines[self.__lastCommentLineIdx+2][:-1].split(',')  #split first line that is not a comment
         for i in range(0, len(self.title)) :
             columns.append([float(firstLine[i])])
 
@@ -115,6 +113,7 @@ class csvParser :
             for j in range(0, len(self.title)) :
                 columns[j].append(float(splitLine[j]))
 
+        #done
         return columns
 
         

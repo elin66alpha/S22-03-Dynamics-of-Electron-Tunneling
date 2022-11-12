@@ -1,8 +1,16 @@
-# Mihir Savadi 23rd February 2021
+# Name:			.
+# Summary:		.
+#
+# Creator: 		Mihir Savadi
 
+#import
 from lib import *
 from utils.csvParser import csvParser
 
+# Name:			csvItem
+# Summary:		Datatype for __.
+# Desc:			.
+# Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
 class csvItem :
     """Takes in the path to one single CSV, parses all the information in it from its file name and its contents
         (according to the protocol laid out in section 2.4 of the summary document), and holds it in fields. This makes
@@ -10,6 +18,13 @@ class csvItem :
         class.
     """
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __init__(self, csvPath: str) :
 
         # MUST MAINTAIN ORDER BELOW. Variables within this class are order dependent.
@@ -62,6 +77,13 @@ class csvItem :
         self.probeC_voltage = axisObject['probeC_voltage']
         self.probeC_current = axisObject['probeC_current']
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __getCSVfileName(self) -> str :
         """gets the name of the file with the rest of the path removed
 
@@ -81,6 +103,13 @@ class csvItem :
 
         return fileName
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __isThreeProbe(self) -> bool :
         """Returns false if csv is a 3 probe measurement, true if not
 
@@ -96,6 +125,13 @@ class csvItem :
 
         return isThreeProbe
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __getCellCoord(self) -> typing.List[str] :
         """List of strings, at most two entries. One if 2-probe, 2 if 3-probe. Each entry corresponds to the coordinate
         of the cell involved.
@@ -115,6 +151,13 @@ class csvItem :
             cellCoords['cell_n'] = '<2 probe measurement, so no neighbor cell>'
             return cellCoords
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __getTimeStamp(self) -> typing.Dict :
         """Returns a dictionary detailing year month day hour minute in string, e.g. 2021 February 23 10.53pm
 
@@ -153,6 +196,13 @@ class csvItem :
 
         return time
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __getCellActivity(self) -> str :
         """Gets activity that cell was undergoing. Only valid for 2 probe. Can be form, reset, set, or observe
 
@@ -165,6 +215,13 @@ class csvItem :
         else :
             return self.csvFileName.split('_')[2].lower()
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __getActivityParameters(self) -> typing.Dict :
         """Returns the activity parameters for the cell in the csv depending on which activity it was undergoing and
         whether it was 2 probe or 3 probe. So depending, some fields may not be populated. Please see section 2.4 of the
@@ -221,6 +278,13 @@ class csvItem :
 
         return aParams
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __getAxis(self) -> typing.Dict :
         """Returns each of the axis' as column vectors -- materialized in python as a 1 dimension list of floats.
 
@@ -259,6 +323,13 @@ class csvItem :
 
         return axisDict
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def getPlots(self) -> typing.Dict :
         """Generates matplotlib objects for the csv at and returns a dictionary of matplotlib figure objects with all
             csv details plotted. This function is public, because pre-emptively running it in the constructor for many

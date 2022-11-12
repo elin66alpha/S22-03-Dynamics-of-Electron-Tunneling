@@ -1,5 +1,9 @@
-# Author: Jim Furches
+# Name:			.
+# Summary:		.
+#
+# Creator: 		Jim Furches
 
+#import 
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
@@ -8,6 +12,10 @@ from functools import cached_property
 
 from utils.csvItem import csvItem
 
+# Name:			CellAnalyzer
+# Summary:		Datatype for __.
+# Desc:			.
+# Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
 class CellAnalyzer:
     """Class that can extract characteristics from cell IV curves and provides interpretable graphs
     
