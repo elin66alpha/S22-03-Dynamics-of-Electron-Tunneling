@@ -14,26 +14,24 @@ from utils.csvItem import csvItem
 
 # Name:			CellAnalyzer
 # Summary:		Datatype for __.
-# Desc:			.
+# Desc:			Class that can extract characteristics from cell IV curves and provides interpretable graphs.
+#   
+#               Currently only supports 2-probe measurements.
 # Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
 class CellAnalyzer:
-    """Class that can extract characteristics from cell IV curves and provides interpretable graphs
-    
-    Currently only supports 2-probe measurements.
-    """
-
+    # Name:			__init__
+    # Summary:		.
+    # Desc:			Constructs the R_on data handler
+    # Refinement:	.
+    #
+    # Input:		csvItem : csvItem
+    #                   Item containing metadata of the CSV file
+    #               set_thresh : float
+    #                   Hyperparameter controlling detection of Set/Form voltage. See `set_voltage()` for more info
+    #               linear_thresh : float
+    #                   Hyperparameter controlling 
+    # Output:		.
     def __init__(self, csvItem: csvItem, set_thresh: float=0.9, linear_thresh: float=5e-3):
-        """Constructs the R_on data handler
-        
-        Parameters
-        ----------
-        csvItem : csvItem
-            Item containing metadata of the CSV file
-        set_thresh : float
-            Hyperparameter controlling detection of Set/Form voltage. See `set_voltage()` for more info
-        linear_thresh : float
-            Hyperparameter controlling 
-        """
         # parse using Mihir's algorithm
         self.metadata = csvItem
 
@@ -42,13 +40,34 @@ class CellAnalyzer:
 
         self.set_thresh = set_thresh
         self.linear_thresh = linear_thresh
-    
+ 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	Rename to getActivity(), or something similar.
+    #
+    # Input:		None.
+    # Output:		. 
     def activity(self) -> str:
         return self.metadata.activity
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		None.
+    # Output:		.
     def is_two_probe(self) -> bool:
         return not self.metadata.isThreeProbe
     
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		None.
+    # Output:		.
     def __get_dataframe(self) -> pd.DataFrame:
         """Takes the csv file and returns a pandas data frame"""
         df = pd.DataFrame({
@@ -58,20 +77,20 @@ class CellAnalyzer:
         })
 
         return df
-    
+
+    # Name:			.
+    # Summary:		.
+    # Desc:			Calculates the set voltage for a set or form CSV file.
+    #    
+    #               Checks when the current crosses `set_thresh * Icc`. Result is cached after first calculation.
+    # Refinement:	.
+    #
+    # Input:		None.
+    # Output:		voltage : float or None
+    #                   Returns voltage of the last crossing instance. Returns `None` if 
+    #                   no crossing is found (e.g. non-conductive cell that remains in nano-Ampère range)    
     @cached_property
     def set_voltage(self):
-        """Calculates the set voltage for a set or form CSV file
-        
-        Checks when the current crosses `set_thresh * Icc`. Result is cached
-        after first calculation.
-
-        Returns
-        -------
-        voltage : float or None
-            Returns voltage of the last crossing instance. Returns `None` if 
-            no crossing is found (e.g. non-conductive cell that remains in nano-Ampère range)
-        """
         if not self.activity() in ['set', 'form']:
             raise Exception(f"set_voltage() called on data from {self.activity()}: {self.file}")
         
@@ -98,10 +117,15 @@ class CellAnalyzer:
 
         return voltage
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		None.
+    # Output:		The first index of data corresponding to a nonlinear jump, as a __.
     @cached_property
     def __linear_idx(self):
-        """Returns the first index of data corresponding to a nonlinear jump. Used internally"""
-
         # theory here is that the 2nd derivative of the linear portion of the current data will be 0,
         # while the sudden nonlinear jumps will have a nonzero 2nd derivative
         # so this gives us a signal and we compare the jumps against the `linear_thresh` hyperparameter
@@ -133,16 +157,19 @@ class CellAnalyzer:
         idx = np.min(jumps) + 1   # add +1 since this index really starts at 1 for the data series due to the mode='valid' in convolution
         
         return idx
-    
+
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		(v_min, v_max) : A tuple consisting of the linear voltage region    
     @cached_property
     def linear_voltage_regime(self):
         """Returns the region where the algorithm thinks the curve is sufficiently linear
         
         Only works on reset curves
-
-        Returns
-        -------
-        (v_min, v_max) : A tuple consisting of the linear voltage region
         """
         v = self.df['AV'].values
 
@@ -151,6 +178,16 @@ class CellAnalyzer:
 
         return v.min(), v.max()
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		resistance : float or None
+    #                   Detected R_on of the cell, or `None` if the data was too nonlinear
+    #               r2 : float
+    #                   Linear best fit quality, indirectly returned in property `r2`.
     @cached_property
     def resistance(self):
         """Tries to determine the R_on for a cell using the reset curve
@@ -159,13 +196,6 @@ class CellAnalyzer:
         Makes use of `linear_thresh` hyperparameter. Value is cached after first call, accessed by property not method.
 
         On resistance is calculated by fitting a line to linear region of IV curve. Then, resistance is 1 / slope of that line.
-
-        Returns
-        -------
-        resistance : float or None
-            Detected R_on of the cell, or `None` if the data was too nonlinear
-        r2 : float
-            Linear best fit quality, indirectly returned in property `r2`.
         """
         if not self.activity() == 'reset':
             raise Exception(f"resistance() called on data from {self.activity()}")
@@ -184,11 +214,16 @@ class CellAnalyzer:
         self.r2 = r ** 2    # store R^2 value from linear fit too
 
         return r_on
-    
+
+    # Name:			.
+    # Summary:		.
+    # Desc:			Calculates the true ramp rate of the data in V/s.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.    
     @cached_property
     def ramp_rate(self) -> float:
-        """Calculates the true ramp rate of the data in V/s"""
-    
         if self.activity() == 'observe':
             raise Exception(f"ramp_rate() called on data from observe")
 
@@ -206,7 +241,13 @@ class CellAnalyzer:
 
             return self.df['AV'][idx] / self.df['Time'][idx]
 
-    
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.    
     def energy_input(self) -> np.ndarray:
         """Calculates the amount of energy being input into the system as a cumulative distribution
         only works on successful resets at this time, as the voltage at compliance current is not
@@ -232,6 +273,13 @@ class CellAnalyzer:
         e[len(e) - 1] = e[len(e) - 2]
         return e
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def plot_energy(self, outfile: str):
         
         import matplotlib.pyplot as plt
@@ -247,12 +295,19 @@ class CellAnalyzer:
         plt.savefig(outfile)
         plt.close()
         
-
+    # Name:			.
+    # Summary:		.
+    # Desc:			Plots IV-curve annotated with what the algorithm interpreted from the data, and saves in `outfile`
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def plot(self, outfile: str):
-        """Plots IV-curve annotated with what the algorithm interpreted from the data, and saves in `outfile`"""
-
+        #import libs
         import matplotlib.pyplot as plt
         import seaborn as sns
+        
+        #
         sns.set_palette('pastel')
 
         # create high quality figure and plot IV curve

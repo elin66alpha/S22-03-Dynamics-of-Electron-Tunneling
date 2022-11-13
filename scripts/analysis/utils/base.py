@@ -15,6 +15,8 @@ from tqdm import tqdm
 # Name:			dataBaseCollator
 # Summary:		Datatype for __.
 # Desc:			This class employs the csvItem and pdfGen class to provide a single wrapper to deal with the entire database in one shot.
+#
+#               Does NOT call csvParser.
 # Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
 class dataBaseCollator :
     # Name:			__init__
