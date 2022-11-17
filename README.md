@@ -40,8 +40,10 @@ gitGraph
 	branch name_0/task_summary
 	commit
 	commit
-	merge name_0/task_summary
 	checkout dev
+	commit
+	merge name_0/task_summary
+	
 ```
 
 ## Cell Mapping
