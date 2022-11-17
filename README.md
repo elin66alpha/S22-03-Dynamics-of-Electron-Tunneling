@@ -45,7 +45,8 @@ gitGraph
 	checkout dev
 	merge name_0/task_summary
 	
-	
+	checkout main
+	merge dev
 	
 ```
 
