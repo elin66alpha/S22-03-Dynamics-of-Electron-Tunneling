@@ -36,13 +36,11 @@ The `main` branch always contains stable code. The `dev` branch contains potenti
 
 ```mermaid
 gitGraph
-	commit id: "HEAD"
+	commit
+	commit
 	branch dev
-	commit id: "HEAD"
-	checkout main
-	merge dev
-	
-	checkout dev
+	commit
+
 	branch name/task_summary
 	commit
 	
