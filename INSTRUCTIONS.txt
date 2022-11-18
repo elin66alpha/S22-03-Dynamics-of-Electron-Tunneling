@@ -2,10 +2,11 @@
 # Summary:		External use guidelines.
 # Desc:			Contains what anyone needs to know in order to analyse measurement data (use the code).
 #
+#				WINDOWS VERFIED ONLY.
+#
 #				Due to differences in file formatting, such as indents, Notepad++ is recommended when viewing both scripts and guidelines.
 #
-# Created: 		Oct. 31st, 2022, Risa Philpott
-# Last Edited: 	Oct. 31st, 2022, Risa Philpott
+# Creator: 		Risa Philpott
 
 INSTRUCTIONS
 

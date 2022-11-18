@@ -1,5 +1,7 @@
-# Mihir Savadi
-# 24th February 2021
+# Name:			.
+# Summary:		.
+#
+# Creator: 		Mihir Savadi
 
 # this is a dictionary mapping the array coordinates (not a complete coordinate) to the cell size. This is
 # predetermined from the wafer architecture we've been using, which is unlikely to change at any point in the near

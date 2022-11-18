@@ -1,5 +1,8 @@
-# Mihir Savadi
-# 23rd February 2021
+# Name:			.
+# Summary:		.
+# Refinement:   .
+#
+# Creator: 		Mihir Savadi
 
 from lib import *
 
@@ -15,3 +18,5 @@ if __name__ == "__main__":
 
     # simply instantiate a dataBaseCollator object and the report files will be created
     db = dataBaseCollator('./resources/processed_data/', f'./resources/analysis_reports/report_{now.strftime(timeFormat)}/')
+    
+    #temp = csvItem("./resources/processed_data/(wafer1,0,0,-1,-1,0,0)_2202211333_form_0_5_0.5_50uA.csv")

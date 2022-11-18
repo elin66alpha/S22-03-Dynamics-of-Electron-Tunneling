@@ -1,4 +1,7 @@
-# Jim Furches
+# Name:			.
+# Summary:		.
+#
+# Creator: 		Jim Furches
 
 import os
 import argparse
@@ -24,7 +27,10 @@ from tqdm import tqdm
 from abc import ABC, abstractmethod
 
 
-
+# Name:			Cell
+# Summary:		Datatype for __.
+# Desc:			.
+# Refinement:	.
 @dataclass(frozen=True, repr=False)
 class Cell:
     """Class representing the location of a cell on a wafer"""
@@ -37,6 +43,10 @@ class Cell:
     def __str__(self):
         return '(' + ','.join([self.wafer, self.grid, self.subgrid, self.cell]) + ')'
 
+# Name:			Run
+# Summary:		Datatype for __.
+# Desc:			.
+# Refinement:	.
 class Run(ABC):
     """Abstract class representing a Keithley run. See `NormalRun` or `ObservationRun`"""
 
