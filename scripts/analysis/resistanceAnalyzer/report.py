@@ -166,14 +166,13 @@ class CellAnalyzerReport:
                 props['Error'] = 'Set failed'
         
         if self.state.is_complete_cycle():
-            temp_df = pandas.DataFrame({
+            self.df = self.df.append({
                 'Cycle': self.state.cycle,
                 'Set Icc': self.state.set_icc,
                 'Set Voltage': self.state.set_voltage,
                 'R_on': self.state.r_on,
                 'R2': self.state.r2
-            })
-            self.df = pandas.concat([self.df,temp_df])
+            }, ignore_index=True)
             self.summaryTable.append([self.state.cycle, self.state.set_icc, f'{self.state.set_voltage:.2f}', f'{self.state.r_on:.2f}', f'{self.state.r2:.3f}'])
             self.prevState = self.state
             self.state = ProcessState(self.state.cycle + 1, None, None, None, None)
