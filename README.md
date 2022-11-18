@@ -1,7 +1,6 @@
 # Micron Dynamics of Electron Tunneling - Central Repository
 
 *In development  
-[Markdown Syntax Guide](https://www.markdownguide.org/basic-syntax/)
 
 ## Project Summary
 x
@@ -29,10 +28,10 @@ This repo serves to make measurement analysis (step 2) and its interactions effi
 > For detailed instructions on how to use this repo to analyze measurement data, see `INSTRUCTIONS.txt`.
 	
 ## Developer Notes
-For detailed guidelines, see `internal_guidelines.txt`. 
+>For detailed guidelines, see `internal_guidelines.txt`. 
 
 ## Workflow
-The `main` branch always contains stable code. The `dev` branch contains potentially unstable code. To make changes, developers branch off `dev` with `their_name/task_summary`. `dev` is merged with `main` periodically, after testing its functionality and verifying its stability. 
+The `main` branch always contains stable code. The `dev` branch contains potentially unstable code. To make changes, developers branch off `dev` with `their_name/task_summary`. `dev` is merged with `main` periodically, after verifying its stability. 
 
 ```mermaid
 gitGraph
@@ -62,7 +61,6 @@ gitGraph
 	
 	checkout main
 	merge dev
-	
 ```
 
 ## Cell Mapping

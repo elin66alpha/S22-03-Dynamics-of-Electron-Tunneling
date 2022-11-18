@@ -1,7 +1,12 @@
-# Mihir Savadi 24th February 2021
+# Name:			.
+# Summary:		.
+# Desc:         .
+#               got help from https://www.blog.pythonlibrary.org/2021/09/28/python-101-how-to-generate-a-pdf/
+#               and https://vonkunesnewton.medium.com/generating-pdfs-with-reportlab-ced3b04aedef
+#
+# Creator: 		Mihir Savadi
 
-# got help from https://www.blog.pythonlibrary.org/2021/09/28/python-101-how-to-generate-a-pdf/
-# and https://vonkunesnewton.medium.com/generating-pdfs-with-reportlab-ced3b04aedef
+
 
 from matplotlib.pyplot import savefig
 from lib import *
@@ -12,27 +17,28 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import utils
 
+# Name:			pdfGen
+# Summary:		Datatype for __.
+# Desc:			Takes generated matplotlib plot objects and other cell information, and create a pdf of them, in the established format.
+#   
+# Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
 class pdfGen :
-    """Class to take generated matplotlib plot objects and other cell information, and create a pdf of them, in the
-        established format.
-    """
-
+    # Name:			__init__
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		csvItemObjList : typing.List 
+    #                   see function description
+    #               summaryDict : ordered dictionary
+    #               pdfDumpPath : str
+    #                   see function description
+    # Output:		.
     def __init__(self, csvItemObjList: list([csvItem]), summaryDict: dict, pdfDumpPath: str) -> None:
         """Takes in a list of csvItem objects to generate a PDF file from. Note that this list needs to be time ordered
         and only have cells of one coordinate -- this is all handled by the dataBaseCollator class. Also takes in an
         ordered dictionary containing summary information about the cell in question. Also takes in a the path to
         produce the final pdf as a string.
-
-        Parameters
-        ----------
-        csvItemObjList : typing.List 
-            see function description
-
-        summaryDict : ordered dictionary
-
-
-        pdfDumpPath : str
-            see function description
         """
         cellCoord = csvItemObjList[0].targetCellCoord
         cellSummaryDict = summaryDict[cellCoord]

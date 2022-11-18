@@ -8,22 +8,19 @@ from lib import *
 from utils.csvParser import csvParser
 
 # Name:			csvItem
-# Summary:		Datatype for __.
-# Desc:			.
-# Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
+# Summary:		Datatype for a CSV file.
+# Desc:			Takes in the path to one single CSV, parses all the information in it from its file name and its contents
+#               (according to the protocol laid out in section 2.4 of the summary document), and holds it in fields. This makes
+#               handling each csv's data easy in the parent class 'dataBaseCollator', where each csv is just an object of this
+#               class.
+# Refinement:	Rename to something like csvFileData
 class csvItem :
-    """Takes in the path to one single CSV, parses all the information in it from its file name and its contents
-        (according to the protocol laid out in section 2.4 of the summary document), and holds it in fields. This makes
-        handling each csv's data easy in the parent class 'dataBaseCollator', where each csv is just an object of this
-        class.
-    """
-
     # Name:			.
     # Summary:		.
-    # Desc:			.
-    # Refinement:	.
+    # Desc:			Populate lots of instance variables to hold file data.
+    # Refinement:	Change instance variables to get functions. Do not parse csv file inside init?
     #
-    # Input:		.
+    # Input:		A CSV path, including the file name.
     # Output:		.
     def __init__(self, csvPath: str) :
 
@@ -36,7 +33,7 @@ class csvItem :
 
         # coordinates of cells involved. If 2 probe then only target cell is valid.
         cellCoords = self.__getCellCoord()
-        self.targetCellCoord   = cellCoords['cell_t'] 
+        self.targetCellCoord   = cellCoords['cell_t']  #ex. "wafer1,0,0,-1,-1,0,0"
         self.neighborCellCoord = cellCoords['cell_n']  
 
         timeDict = self.__getTimeStamp()
@@ -105,49 +102,42 @@ class csvItem :
 
     # Name:			.
     # Summary:		.
-    # Desc:			.
+    # Desc:			three probe when file name's first character is ( AND the first character after the first _ is (
     # Refinement:	.
     #
-    # Input:		.
-    # Output:		.
+    # Input:		The file name, as a string.
+    # Output:		bool
     def __isThreeProbe(self) -> bool :
-        """Returns false if csv is a 3 probe measurement, true if not
+        isThreeProbe = False  #result
 
-        Returns
-        -------
-        bool
-        """
-        isThreeProbe = False
+        fileNameSplit = self.csvFileName.split('_')  #extract underscores from file name string, converts to a list 
 
-        fileNameSplit = self.csvFileName.split('_')
+        #three probe when file name's first character is ( AND the first character after the first _ is (
         if fileNameSplit[0][0] == '(' and fileNameSplit[1][0] == '(' :
-            isThreeProbe = True
+            isThreeProbe = True  #update result when is three probe
 
         return isThreeProbe
 
     # Name:			.
     # Summary:		.
-    # Desc:			.
-    # Refinement:	.
+    # Desc:			Splits the file name, checks if the file is three probe or not, then extracts the cell coordinates from the file name.
+    #               When two probe, there is only one cell to find coordinates for. When three probe, must find the coordinates for the active cell and neighbor cell.
+    # Refinement:	Could change input to file name already split, and make a method to do that.
     #
-    # Input:		.
-    # Output:		.
+    # Input:		The file name, as a string.
+    # Output:		The cell coordinates, as a dictionary of strings. NOT a list. Always has 2 entries.
+    #               ex. cellCoords for "(wafer1,0,0,-1,-1,0,0)_2202211333_form_0_5_0.5_50uA.csv"
+    #                   key:  cell_t  value:  wafer1,0,0,-1,-1,0,0
+    #                   key:  cell_n  value:  <2 probe measurement, so no neighbor cell>
     def __getCellCoord(self) -> typing.List[str] :
-        """List of strings, at most two entries. One if 2-probe, 2 if 3-probe. Each entry corresponds to the coordinate
-        of the cell involved.
-
-        Returns
-        -------
-        typing.List[str]
-        """
-        cellCoords = {}
+        cellCoords = {}  #result dictionary
         fileNameSplit = self.csvFileName.split('_')
         if self.isThreeProbe :
-            cellCoords['cell_t'] = fileNameSplit[0][1:-1] # remove the brackets
-            cellCoords['cell_n'] = fileNameSplit[1][1:-1] # remove the brackets
+            cellCoords['cell_t'] = fileNameSplit[0][1:-1] #ignore parenthesis
+            cellCoords['cell_n'] = fileNameSplit[1][1:-1] #ignore parenthesis
             return cellCoords
         else :
-            cellCoords['cell_t'] = fileNameSplit[0][1:-1] # remove the brackets
+            cellCoords['cell_t'] = fileNameSplit[0][1:-1] #ignore parenthesis
             cellCoords['cell_n'] = '<2 probe measurement, so no neighbor cell>'
             return cellCoords
 
@@ -198,18 +188,12 @@ class csvItem :
 
     # Name:			.
     # Summary:		.
-    # Desc:			.
-    # Refinement:	.
+    # Desc:			Gets activity that cell was undergoing. Only valid for 2 probe. Can be form, reset, set, or observe
+    # Refinement:	Could change to return empty string when invalid.
     #
     # Input:		.
-    # Output:		.
+    # Output:		The activity, as a string.
     def __getCellActivity(self) -> str :
-        """Gets activity that cell was undergoing. Only valid for 2 probe. Can be form, reset, set, or observe
-
-        Returns
-        -------
-        str
-        """
         if self.isThreeProbe :
             return '<csv is 3-probe measurement. No Activity Value>'
         else :
@@ -232,7 +216,7 @@ class csvItem :
         typing.Dict
             _description_
         """
-        aParams = {}
+        aParams = {}  #result
 
         fileNameSplit = self.csvFileName.split('_')
 
@@ -283,8 +267,8 @@ class csvItem :
     # Desc:			.
     # Refinement:	.
     #
-    # Input:		.
-    # Output:		.
+    # Input:		The file data, as a csvParser.
+    # Output:		A dictionary containing an entry for every possible data column in the file.
     def __getAxis(self) -> typing.Dict :
         """Returns each of the axis' as column vectors -- materialized in python as a 1 dimension list of floats.
 
@@ -329,7 +313,7 @@ class csvItem :
     # Refinement:	.
     #
     # Input:		.
-    # Output:		.
+    # Output:		A size three dictionary containing matplotlib.pyplot figures.
     def getPlots(self) -> typing.Dict :
         """Generates matplotlib objects for the csv at and returns a dictionary of matplotlib figure objects with all
             csv details plotted. This function is public, because pre-emptively running it in the constructor for many
@@ -341,7 +325,7 @@ class csvItem :
             'probe B plot', and 'probe C plot'
         """
 
-        plots = {}
+        plots = {}  #result
 
         AProbeExists = (type(self.probeA_voltage) != str)
         BProbeExists = (type(self.probeB_voltage) != str)

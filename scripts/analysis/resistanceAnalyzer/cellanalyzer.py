@@ -14,9 +14,9 @@ from utils.csvItem import csvItem
 
 # Name:			CellAnalyzer
 # Summary:		Datatype for __.
-# Desc:			Class that can extract characteristics from cell IV curves and provides interpretable graphs.
+# Desc:			Extracts characteristics from cell IV curves and provides interpretable graphs.
 #   
-#               Currently only supports 2-probe measurements.
+# Limitations:  Currently only supports 2-probe measurements.
 # Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
 class CellAnalyzer:
     # Name:			__init__

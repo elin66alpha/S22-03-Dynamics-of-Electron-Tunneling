@@ -2,6 +2,9 @@
 
 # Adapted from `pdfgen.py`
 
+#contains TWO classes
+
+
 from dataclasses import dataclass
 
 import pandas
