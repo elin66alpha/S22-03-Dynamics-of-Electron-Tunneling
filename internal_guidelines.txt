@@ -33,7 +33,10 @@ dataBaseCollator (utils/base.py)
 ----cvsParser (utils/csvParser.py)
 --pdfGen (pdfGenerator/pdfgen.py)
 --CellAnalyzerReport (resistanceAnalyzer/report.py)
+----CellAnalyzer (cellanalyzer.py)
 ----ProcessState (report.py)
+
+dataBaseCollator calls cellSizeDataBase, even tho that is not a datatype.
 
 
 GUIDELINES

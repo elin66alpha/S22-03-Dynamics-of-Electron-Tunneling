@@ -14,11 +14,10 @@ from pdfGenerator.pdfgen import pdfGen
 from tqdm import tqdm
 
 # Name:			dataBaseCollator
-# Summary:		Datatype for __.
+# Summary:		Not a datatype.
 # Desc:			This class employs the csvItem and pdfGen class to provide a single wrapper to deal with the entire database in one shot.
 #
-#               Does NOT call csvParser.
-# Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
+# Refinement:	Remove this datatype. Convert to methods. Make a datatype to contain all public methods and stuff for __main__.
 class dataBaseCollator :
     # Name:			__init__
     # Summary:		.
@@ -45,8 +44,8 @@ class dataBaseCollator :
 
         # then create a pdf for each of these sublists using the pdfGenerator class and put them in a new reports
         # folder.
-        for key,value in tqdm(self.csvData.items()) :
-            pdfGen(value, self.summaryDict, self.pathToDumpReport)
+        for key,value in tqdm(self.csvData.items()) :  #grab the value, all csvItems for a cell, of each csvData entry
+            pdfGen(value, self.summaryDict, self.pathToDumpReport)  #these 2 have the same arguments, combine?
             CellAnalyzerReport(value, self.summaryDict, self.pathToDumpReport).generateReport()
 
     # Name:			__organizeCSVs

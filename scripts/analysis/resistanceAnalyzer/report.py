@@ -1,9 +1,9 @@
-# Jim Furches
-
-# Adapted from `pdfgen.py`
-
-#contains TWO classes
-
+# Name:			report.py
+# Summary:		.
+# Desc:         Adapted from `pdfgen.py`.
+#               Contains TWO classes.
+#
+# Creator: 		Jim Furches
 
 from dataclasses import dataclass
 
@@ -24,26 +24,26 @@ import seaborn as sns
 import os
 import shutil
 
+# Name:			CellAnalyzerReport
+# Summary:		Datatype for a pdf report.
+# Desc:			Takes in CSV files, analyzes the properties of the cells using the CellAnalyzer, and creates a special pdf report containing that information.
+#   
+# Limitations:  Currently only supports 2-probe measurements.
+# Refinement:	Remove this datatype. Convert to methods to generate the reports.
 class CellAnalyzerReport:
-    """Class that takes in CSV files, analyzes the properties of the cells using the CellAnalyzer, and creates
-    a special pdf report containing that information
-    """
-
+    # Name:			__init__
+    # Summary:		.
+    # Desc:			Generates a PDF file and outputs a pdf in the folder path.
+    # Refinement:	.
+    #
+    # Input:		csvItems : List[csvItem] 
+    #                   Chronological list of CSV files all belonging to a single cell
+    #               summaryDict : Dict[str, object]
+    #                   Cell usage summary dict created by databaseCollator
+    #               pdfFolder : str
+    #                   Folder in which to save PDF file
+    # Output:		None.
     def __init__(self, csvItems: List[csvItem], summaryDict: Dict[str, object], pdfFolder: str):
-        """Takes in a list of csvItem objects to generate a PDF file from and outputs a pdf in folder path
-
-        Parameters
-        ----------
-        csvItems : List[csvItem] 
-            Chronological list of CSV files all belonging to a single cell
-
-        summaryDict : Dict[str, object]
-            Cell usage summary dict created by databaseCollator
-
-        pdfFolder : str
-            Folder in which to save PDF file
-        """
-
         self.cellCoord = csvItems[0].targetCellCoord
         self.pdfFolder = pdfFolder
         self.pdf_name = f"{pdfFolder}/({self.cellCoord})_characteristics.pdf"
@@ -60,7 +60,14 @@ class CellAnalyzerReport:
 
         self.state = ProcessState(1, None, None, None, None)
         self.prevState = self.state
-        
+
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.        
     def generateReport(self):
         self.tmpDir = f'{self.pdfFolder}/tmp'
         os.makedirs(self.tmpDir)
@@ -93,7 +100,7 @@ class CellAnalyzerReport:
 
         pages = []
 
-        for i, page in enumerate(self.items):
+        for i, page in enumerate(self.items):  #items is a list of all CSV files belonging to a single cell
             if page.activity == 'observe':
                 continue
 
@@ -115,10 +122,15 @@ class CellAnalyzerReport:
             doc.build(flowables)
 
         shutil.rmtree(self.tmpDir)
-    
-    def __generatePage(self, page: csvItem, i: int) -> List:
-        """Takes a CSV item and returns a list of flowables. Does not work on observe"""
 
+    # Name:			.
+    # Summary:		.
+    # Desc:			Takes a CSV item and returns a list of flowables. Does not work on observe.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.    
+    def __generatePage(self, page: csvItem, i: int) -> List:
         ca = CellAnalyzer(page)
 
         # header
@@ -197,7 +209,13 @@ class CellAnalyzerReport:
 
         return flowables
 
-
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.
     def __getImage(self, path, width=1):
         """Makes resizing images to scale easy
         """
@@ -205,7 +223,14 @@ class CellAnalyzerReport:
         iw, ih = img.getSize()
         aspect = ih / float(iw)
         return Image(path, width=width, height=(width * aspect))
-    
+  
+    # Name:			.
+    # Summary:		.
+    # Desc:			.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.  
     def __getIccRonPlot(self) -> Image:
         path = f"{self.tmpDir}/r_on_plot.png"
 
@@ -220,6 +245,11 @@ class CellAnalyzerReport:
 
         return self.__getImage(path, width=400)
 
+# Name:			ProcessState
+# Summary:		Datatype for __.
+# Desc:			.
+#       
+# Refinement:	.
 @dataclass
 class ProcessState:
     cycle: int

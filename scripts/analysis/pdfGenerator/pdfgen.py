@@ -6,8 +6,6 @@
 #
 # Creator: 		Mihir Savadi
 
-
-
 from matplotlib.pyplot import savefig
 from lib import *
 from utils.csvItem import csvItem
@@ -18,28 +16,24 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import utils
 
 # Name:			pdfGen
-# Summary:		Datatype for __.
+# Summary:		This does not represent a datatype.
 # Desc:			Takes generated matplotlib plot objects and other cell information, and create a pdf of them, in the established format.
 #   
-# Refinement:	Make this a datatype for a __, then have methods to __ SEPERATE from object init.
+# Refinement:	REMOVE THIS DATATYPE. Convert to a method. 
 class pdfGen :
     # Name:			__init__
     # Summary:		.
-    # Desc:			.
+    # Desc:			Takes in a list of csvItem objects to generate a PDF file from. Note that this list needs to be time ordered
+    #               and only have cells of one coordinate -- this is all handled by the dataBaseCollator class. Also takes in an
+    #               ordered dictionary containing summary information about the cell in question. Also takes in a the path to
+    #               produce the final pdf as a string.
     # Refinement:	.
     #
     # Input:		csvItemObjList : typing.List 
-    #                   see function description
     #               summaryDict : ordered dictionary
     #               pdfDumpPath : str
-    #                   see function description
-    # Output:		.
+    # Output:		None.
     def __init__(self, csvItemObjList: list([csvItem]), summaryDict: dict, pdfDumpPath: str) -> None:
-        """Takes in a list of csvItem objects to generate a PDF file from. Note that this list needs to be time ordered
-        and only have cells of one coordinate -- this is all handled by the dataBaseCollator class. Also takes in an
-        ordered dictionary containing summary information about the cell in question. Also takes in a the path to
-        produce the final pdf as a string.
-        """
         cellCoord = csvItemObjList[0].targetCellCoord
         cellSummaryDict = summaryDict[cellCoord]
         
@@ -116,9 +110,14 @@ class pdfGen :
 
         shutil.rmtree(tempImageDir)
 
+    # Name:			__getImage
+    # Summary:		.
+    # Desc:			Makes resizing images to scale easy.
+    # Refinement:	.
+    #
+    # Input:		.
+    # Output:		.  
     def __getImage(self, path, width=1):
-        """Makes resizing images to scale easy
-        """
         img = utils.ImageReader(path)
         iw, ih = img.getSize()
         aspect = ih / float(iw)
