@@ -91,8 +91,9 @@ class CellAnalyzerReport:
         pages = []
 
         for i, page in enumerate(self.items):
-            if page.activity == 'observe':
-                continue
+            #test code not to be merged
+            #if page.activity == 'observe':
+                #continue
 
             for flowable in self.__generatePage(page, i):
                 pages.append(flowable)
@@ -149,12 +150,8 @@ class CellAnalyzerReport:
             
             else:
                 props['Error'] = 'Too nonlinear/failed'
-            
-            #test code not to be merged
-            ca.plot_energy(f'{self.tmpDir}/ca_plot_energy{i}.png')
-            flowables.append(self.__getImage(f'{self.tmpDir}/ca_plot_energy{i}.png', width=400))
 
-        else:
+        elif ca.activity() == 'set':
             # successful set/form
             if ca.set_voltage:
                 self.state.set_icc = page.complianceCurrent
@@ -164,6 +161,13 @@ class CellAnalyzerReport:
 
             else:
                 props['Error'] = 'Set failed'
+
+        #test code not to be merged
+        elif ca.activity() == 'observe':
+            ca.plot_energy(f'{self.tmpDir}/ca_plot_energy{i}.png', f'{self.tmpDir}/ca_plot_energy_tot{i}.png')
+            flowables.append(self.__getImage(f'{self.tmpDir}/ca_plot_energy_tot{i}.png', width=400))
+            flowables.append(self.__getImage(f'{self.tmpDir}/ca_plot_energy{i}.png', width=400))
+            
         
         if self.state.is_complete_cycle():
             self.df = self.df.append({

@@ -14,4 +14,4 @@ if __name__ == "__main__":
     timeFormat = "%Y-%b-%d-%I%M%p_%Ss"
 
     # simply instantiate a dataBaseCollator object and the report files will be created
-    db = dataBaseCollator('./resources/processed_data/', f'./resources/analysis_reports/report_{now.strftime(timeFormat)}/')
+    db = dataBaseCollator('./resources/test_processed_data/', f'./resources/analysis_reports/report_{now.strftime(timeFormat)}/')

@@ -183,7 +183,8 @@ class CellAnalyzer:
         """Calculates the true ramp rate of the data in V/s"""
     
         if self.activity() == 'observe':
-            raise Exception(f"ramp_rate() called on data from observe")
+            #raise Exception(f"ramp_rate() called on data from observe")
+            return 0
 
         v = np.abs(self.df['AV'].values)
         series = v >= 1
@@ -199,17 +200,17 @@ class CellAnalyzer:
 
             return self.df['AV'][idx] / self.df['Time'][idx]
 
-    
-    def energy_input(self) -> np.ndarray:
+
+    def energy(self):
         #Calculates the amount of energy being input into the system as a cumulative distribution
         #only works on observe, as it requires a non-saturating compliance current
 
         #reset is allowed temporarily for testing purposes
-        if not self.activity() in ['observe', 'reset']:
-            raise Exception(f"energy_input() called on data not from observe or reset")
+        if not self.activity() in ['observe']:
+            raise Exception(f"energy_input() called on data not from observe")
 
         #given as %/s in terms of energy dissipated from the system
-        decayRate = 0.1
+        decayRate = 0.9
         
         time = self.df['Time']
         i =np.abs(self.df['AI'])
@@ -219,8 +220,13 @@ class CellAnalyzer:
         #calculate the length of each timestep using a discrete first order derivative
         dt = np.convolve(time, np.array([0.5, 0, -0.5]), mode='same')
 
+        #the last measurement in the array will have a large negative time value so to keep things simple
+        #the last value in the distribution is just set to match the one immediately prior
+        dt[len(dt) - 1] = dt[len(dt) - 2]
+
         e = i * v * dt
         #e = np.cumsum(e, 0)
+        eTot = np.cumsum(e, 0)
 
         #calculate decay coefficients for energy accumulation calculation
         decayCoefficients = pow(1-decayRate, dt)
@@ -229,33 +235,45 @@ class CellAnalyzer:
         dIt = np.nditer(decayCoefficients)
 
         prev = 0.0
-        dCPrev = 0.0
-
+        
         for (x, y) in zip(eIt, dIt):
             x += prev
             x *= y
             prev = x
 
-        
-        #e = np.cumsum(e, 0)
-        #the last measurement in the array will have a large negative time value so to keep things simple
-        #the last value in the distribution is just set to match the one immediately prior
         e[len(e) - 1] = e[len(e) - 2]
-        return e
+        return e, eTot
 
-    def plot_energy(self, outfile: str):
+    def plot_energy(self, outfile1: str, outfile2: str):
         
         import matplotlib.pyplot as plt
         import seaborn as sns
+
+        e, eTot = self.energy()
+
         sns.set_palette('pastel')
+        
         
         fig = plt.figure(figsize=(10, 4), dpi=300)
         fig.patch.set_facecolor('white')
-        sns.lineplot(x=self.df.Time, y=self.energy_input())
+        
+        plt.title(f"Approximate Energy Decay")
+        sns.lineplot(x=self.df.Time, y=e)
         plt.xlabel("Time (seconds)")
         plt.ylabel("Energy (J)")
 
-        plt.savefig(outfile)
+        plt.savefig(outfile1)
+        plt.close()
+
+        fig = plt.figure(figsize=(10, 4), dpi=300)
+        fig.patch.set_facecolor('white')
+        
+        plt.title(f"Total Energy Input")
+        sns.lineplot(x=self.df.Time, y=eTot)
+        plt.xlabel("Time (seconds)")
+        plt.ylabel("Energy (J)")
+
+        plt.savefig(outfile2)
         plt.close()
         
 
