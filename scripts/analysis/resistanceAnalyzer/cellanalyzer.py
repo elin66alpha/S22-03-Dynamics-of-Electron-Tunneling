@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
+from scipy.signal import lfilter
 
 from functools import cached_property
 
@@ -200,25 +201,43 @@ class CellAnalyzer:
 
     
     def energy_input(self) -> np.ndarray:
-        """Calculates the amount of energy being input into the system as a cumulative distribution
-        only works on successful resets at this time, as the voltage at compliance current is not
-        properly handled yet"""
+        #Calculates the amount of energy being input into the system as a cumulative distribution
+        #only works on observe, as it requires a non-saturating compliance current
 
-
+        #reset is allowed temporarily for testing purposes
         if not self.activity() in ['observe', 'reset']:
-            raise Exception(f"energy_input() called on data from not from observe or reset")
+            raise Exception(f"energy_input() called on data not from observe or reset")
 
+        #given as %/s in terms of energy dissipated from the system
+        decayRate = 0.1
         
         time = self.df['Time']
-        i = self.df['AI']
+        i =np.abs(self.df['AI'])
         v = np.abs(self.df['AV'])
 
 
         #calculate the length of each timestep using a discrete first order derivative
-        dt = np.convolve(time, np.array([-0.5, 0, 0.5]), mode='same')
+        dt = np.convolve(time, np.array([0.5, 0, -0.5]), mode='same')
 
         e = i * v * dt
-        e = np.cumsum(e, 0)
+        #e = np.cumsum(e, 0)
+
+        #calculate decay coefficients for energy accumulation calculation
+        decayCoefficients = pow(1-decayRate, dt)
+
+        eIt = np.nditer(e, op_flags=['readwrite'])
+        dIt = np.nditer(decayCoefficients)
+
+        prev = 0.0
+        dCPrev = 0.0
+
+        for (x, y) in zip(eIt, dIt):
+            x += prev
+            x *= y
+            prev = x
+
+        
+        #e = np.cumsum(e, 0)
         #the last measurement in the array will have a large negative time value so to keep things simple
         #the last value in the distribution is just set to match the one immediately prior
         e[len(e) - 1] = e[len(e) - 2]
