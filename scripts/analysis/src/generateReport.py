@@ -1,34 +1,26 @@
-# Name:			generate_reports.py
+# Name:			generateReport.py
 # Summary:		.
-# Desc:         .
-#
-# Creator: 		Jim Furches
-
-# Name:			CellAnalyzerReport
-# Summary:		Datatype for a pdf report.
 # Desc:			Takes in CSV files, analyzes the properties of the cells using the CellAnalyzer, and creates a special pdf report containing that information.
 #   
 # Limitations:  Currently only supports 2-probe measurements.
-# Refinement:	Remove this datatype. Convert to methods to generate the reports.
+# Refinement:	Move ProcessState to a new file, since it is copied in more than one place in repo.
 
+#import dependencies  
+import os
+import shutil
 from dataclasses import dataclass
-
 import pandas
-from resistanceAnalyzer.cellanalyzer import CellAnalyzer
-from utils.csvItem import csvItem
+from typing import Iterable, Dict, List, OrderedDict
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, PageBreakIfNotEmpty, Table, ListFlowable
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import utils
 
-from typing import Iterable, Dict, List, OrderedDict
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-import os
-import shutil
+import src.CellAnalyzer as ca
+from src.utils.CsvFile import CsvFile
 
 # Name:			ProcessState
 # Summary:		Datatype for __.
@@ -62,7 +54,7 @@ class ProcessState:
 #               pdfFolder : str
 #                   Folder in which to save PDF file
 # Output:		None.
-def generateReport(csvItems: List[csvItem], summaryDict: Dict[str, object], pdfFolder: str):
+def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfFolder: str):
     #init
     cellCoord = csvItems[0].targetCellCoord
     pdfFolder = pdfFolder
@@ -138,24 +130,24 @@ def generateReport(csvItems: List[csvItem], summaryDict: Dict[str, object], pdfF
 # Name:			.
 # Summary:		.
 # Desc:			Takes a CSV item and returns a list of flowables. Does not work on observe.
-# Refinement:	Make sure changing states to reg variables is fine
+# Refinement:	Check if changing states to regular variables is fine
 #
 # Input:		
 #               df, summaryTable are modified
 # Output:		Flowables and df and summary table   
-def __generatePage(page: csvItem, i: int, tmpDir, df, summaryTable) -> List:
+def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     #init
     #df_copy = df  #need to deepcopy?
     
     state = ProcessState(1, None, None, None, None)
     prevState = state
     
-    ca = CellAnalyzer(page)
+    df_calc = ca.calcDataFrame(page)
 
     # header
     styles = getSampleStyleSheet()
     flowables = [
-        Paragraph(ca.activity(), styles["Heading2"]),
+        Paragraph(page.activity, styles["Heading2"]),
         Paragraph(f'——————————————————————————————————', styles["Heading2"])
     ]
 
@@ -164,37 +156,36 @@ def __generatePage(page: csvItem, i: int, tmpDir, df, summaryTable) -> List:
         'Icc': f'{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
         'Voltage Range': f'{page.startVoltage}  →  {page.endVoltage}',
         'Target Ramp Rate': f'{page.rampRate}',
-        'True Ramp Rate': f'{ca.ramp_rate:.3f} V/s*',
+        'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
         'Cycle': state.cycle
     })
 
-    if ca.activity() == 'reset':
+    if page.activity == 'reset':
         # successful reset
-        if ca.resistance:
-            state.r_on = ca.resistance
-            state.r2 = ca.r2
+        if ca.calcResistance(page, df_calc):
+            state.r_on, state.r2 = ca.calcResistance(page, df_calc)
 
             if state.set_icc is None:
                 state.set_icc = prevState.set_icc
                 state.set_voltage = prevState.set_voltage
 
-            props['Resistance'] = f'{ca.resistance:.2f} Ω'
-            props['Linear Fit R2'] = f'{ca.r2:.3f}'
+            props['Resistance'] = f'{state.r_on:.2f} Ω'
+            props['Linear Fit R2'] = f'{state.r2:.3f}'
         
         else:
             props['Error'] = 'Too nonlinear/failed'
         
         #test code not to be merged
-        ca.plot_energy(f'{tmpDir}/ca_plot_energy{i}.png')
+        ca.plot_energy(page, df_calc, f'{tmpDir}/ca_plot_energy{i}.png')
         flowables.append(__getImage(f'{tmpDir}/ca_plot_energy{i}.png', width=400))
 
     else:
         # successful set/form
-        if ca.set_voltage:
+        if ca.calcSetVoltage(page, df_calc):
             state.set_icc = page.complianceCurrent
-            state.set_voltage = ca.set_voltage
+            state.set_voltage = ca.calcSetVoltage(page, df_calc)
 
-            props['Set Voltage'] = f'{ca.set_voltage:.2f} V'
+            props['Set Voltage'] = f'{state.set_voltage:.2f} V'
 
         else:
             props['Error'] = 'Set failed'
@@ -222,21 +213,19 @@ def __generatePage(page: csvItem, i: int, tmpDir, df, summaryTable) -> List:
 
     # generate the plot
     plotName = f'{tmpDir}/ca_plot_{i}.png'
-    ca.plot(plotName)
+    ca.plot(page, df_calc, plotName)
     flowables.append(__getImage(plotName, width=400))
 
     return flowables
 
 # Name:			.
 # Summary:		.
-# Desc:			.
+# Desc:			Makes resizing images to scale easy.
 # Refinement:	.
 #
 # Input:		.
 # Output:		.
 def __getImage(path, width=1):
-    """Makes resizing images to scale easy
-    """
     img = utils.ImageReader(path)
     iw, ih = img.getSize()
     aspect = ih / float(iw)

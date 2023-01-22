@@ -5,8 +5,6 @@
 #				WINDOWS VERFIED ONLY.
 #
 #				Due to differences in file formatting, such as indents, Notepad++ is recommended when viewing both scripts and guidelines.
-#
-# Creator: 		Risa Philpott
 
 INSTRUCTIONS
 
@@ -18,8 +16,6 @@ Overview
 	  
 	  
 Run Code
-
-  "python scripts/analysis/__main__.py"
   
   1. if not already installed, need to pip install 
 	numpy
@@ -29,7 +25,6 @@ Run Code
 	reportlab, https://pypi.org/project/reportlab/
 	seaborn
 	tqdm
-  2. run __main__.py (not Keithley)
-	   since in dataProccessingSript dir, DID NOT RUN because need access to other folders
-	   so need to run __main__ from repo dir, not from __main__ dir.
-  4. done! report is generated
+  2. From the repo dir, run:
+	"python scripts/analysis"
+  4. done! report(s) are generated
