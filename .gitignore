@@ -8,3 +8,6 @@ R_on_(0,0,2,2)/
 
 #backups
 *.backup
+
+#resources
+# resources/

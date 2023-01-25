@@ -1,12 +1,12 @@
 # Micron Dynamics of Electron Tunneling - Central Repository
 
-*In development  
+*Remember to backup resources!
 
 ## Project Summary
 x
 
 ### Previous Work
-Among other things, the previous team discovered a crucial case of unexpected behavior. A spontaneous set of a neighboring cell.  
+We are continuing a previous team's work; credit goes to them. Among other things, the previous team discovered a crucial case of unexpected behavior. A spontaneous set of a neighboring cell.  
 <div style="text-align: center;">
 
 [Git Repository](https://github.com/mihirsavadi/MicronDynamicsOfElectronTunneling)

@@ -28,6 +28,7 @@ Files Structure
 
 Datatype Structure
 
+[old]
 dataBaseCollator (utils/base.py)
 --csvItem (utils/csvItem.py)
 ----cvsParser (utils/csvParser.py)
@@ -37,6 +38,9 @@ dataBaseCollator (utils/base.py)
 ----ProcessState (report.py)
 
 dataBaseCollator calls cellSizeDataBase, even tho that is not a datatype.
+
+[new]
+CsvFile and ProcessState only classes
 
 
 GUIDELINES
