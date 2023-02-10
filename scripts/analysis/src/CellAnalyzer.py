@@ -81,6 +81,42 @@ def calcSetVoltage(csv_file, df, set_thresh: float=0.9):  #self.df
 
     return voltage
 
+# Name:			calcCellState
+# Summary:		.
+# Desc:			Calculates the state the cell is currently in at end of calculation.
+#    
+# Refinement:	.
+#
+# Input:		csv_file : csv file object that is used for calculation
+#               df : dataframe of the calculation
+#               rThresh : resistance threshold for determining set or reset, set to 5k Ohm by default
+# Output:		string : 'set', 'reset', or 'unknown' 
+def calcCellState(csv_file, df, rThresh = 5000):
+    i = df['AI'].to_numpy()
+    v = df['AV'].to_numpy()
+
+    r = abs(v / i)
+
+    sampleR = r[-1]
+
+    #handle the case of being at compliance current
+    if (i[-1] / float(csv_file.complianceCurrent)) > 0.90:
+        iccThresh = df['AI'] / float(csv_file.complianceCurrent)
+        crosses = np.argwhere(iccThresh > 0.90)
+
+        #cell starts at compliance current so resistance can't be calculated
+        if len(crosses) == 0:
+            return 'unknown'
+        #prone to being an overestimate, but should be accurate enough for this purpose
+        sampleR = r[crosses[-1][0]]
+
+    if sampleR > rThresh:
+        return 'set'
+    else:
+        return 'reset'
+
+
+
 # Name:			.
 # Summary:		.
 # Desc:			.

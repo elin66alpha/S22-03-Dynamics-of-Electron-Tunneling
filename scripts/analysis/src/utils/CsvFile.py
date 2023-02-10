@@ -6,6 +6,7 @@ from datetime import datetime
 import typing
 import numpy as np
 import matplotlib.pyplot as plt
+import CellAnalyzer
 
 import src.utils.csvParser as csvParser
 
@@ -34,7 +35,7 @@ class CsvFile :
         self.csvPathString = csvPath                 # just a place to store the path of the CSV
         self.csvFileName   = self.__getCSVfileName() # gets the file name with rest of path removed
 
-        self.isThreeProbe  = self.__isThreeProbe()   # if two probe then this is true
+        self.isThreeProbe  = self.__isThreeProbe()   # if two probe then this is False
 
         # coordinates of cells involved. If 2 probe then only target cell is valid.
         cellCoords = self.__getCellCoord()
@@ -79,6 +80,8 @@ class CsvFile :
         self.probeB_current = axisObject['probeB_current']
         self.probeC_voltage = axisObject['probeC_voltage']
         self.probeC_current = axisObject['probeC_current']
+
+        self.setVoltage
 
     # Name:			.
     # Summary:		.
@@ -420,3 +423,31 @@ class CsvFile :
 
         return axisDict
     #end __getAxis()
+
+    # Name:			__getAnalysis
+    # Summary:		.
+    # Desc:			Returns each of the values calculated by the analysis for the given measurement
+    # Refinement:	.
+    #
+    # Input:		The file data, as a csvParser.
+    # Output:		A dictionary containing an entry for every possible data column in the file, typing.Dict
+    def __getAnalysis(self) -> typing.Dict :
+        analysisDict = {}
+
+        analysisDict['setVoltage'] = '<not set or form, so invalid>'
+        analysisDict['trueRampRate'] = '<observe or three probe, so invalid>'
+        analysisDict['cell_tResistance'] = '<not reset, so invalid>'
+        analysisDict['dataFrame'] = CellAnalyzer.calcDataFrame(self)
+        analysisDict['cell_tState'] = CellAnalyzer
+
+        if self.activity in ['set', 'form']:
+            analysisDict['setVoltage'] = CellAnalyzer.calcSetVoltage(self, analysisDict['dataFrame'])
+        
+        if not self.activity in 'observe' or not self.isThreeProbe:
+            analysisDict['trueRampRate'] = CellAnalyzer.calcRampRate(self, analysisDict['dataFrame'])
+
+        if self.activity in 'reset':
+            analysisDict['cell_tResistance'] = CellAnalyzer.calcResistance(self, analysisDict['dataFrame'])
+
+        return analysisDict
+    
