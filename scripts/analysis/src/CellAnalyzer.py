@@ -190,7 +190,7 @@ def calcRampRate(csv_file, df) -> float:
     crosses = np.argwhere(d)
 
     if len(crosses) == 0:
-        return df['AV'][-1] / df['Time'][-1]
+        return df['AV'][len(df['AV'].values)-1] / df['Time'][len(df['Time'].values)-1]
     
     else:
         idx = crosses[0][0]

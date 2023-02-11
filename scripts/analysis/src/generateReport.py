@@ -36,11 +36,16 @@ class ProcessState:
     r2: float
 
     def is_complete_cycle(self):
-        return self.cycle \
-            and self.set_icc \
-            and self.set_voltage \
-            and self.r_on \
-            and self.r2
+        return self.cycle is not None \
+            and self.set_icc is not None \
+            and self.set_voltage is not None \
+            and self.r_on is not None \
+            and self.r2 is not None
+
+#very disgusting solution
+state = ProcessState(1, None, None, None, None)
+prevState = state
+df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'], copy=True)
             
 # Name:			.
 # Summary:		.
@@ -66,8 +71,8 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     cellSize = cellSummaryDict['cellSize']
     timesAccessed = cellSummaryDict['timesAccessed']
     lastAccessed = cellSummaryDict['lastAccessed']
-
-    df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'])
+    global df
+    df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'], copy=True)
     summaryTable = [["Cycle #", "Set Icc (μA)", "Set Voltage (V)", "R_on (Ω)", "R2"]]
     
     #generate report 
@@ -104,10 +109,19 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     pages = []
 
     for i, page in enumerate(items):  #items is a list of all CSV files belonging to a single cell
+
+        #Once again, cringe, so fix as soon as possible
+        global state, prevState
+
+        if i == 0:
+            state = ProcessState(1, None, None, None, None)
+            prevState = state
+        
         if page.activity == 'observe':
             continue
 
-        for flowable in __generatePage(page, i, tmpDir, df, summaryTable):  #df and summaryTable modified by method
+        for flowable in __generatePage(page, i, tmpDir, summaryTable):  #df and summaryTable modified by method
+            print(df)
             pages.append(flowable)
         
         # put each operation on its own page
@@ -126,7 +140,8 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
 
     shutil.rmtree(tmpDir)   
 
-
+state = ProcessState(1, None, None, None, None)     
+prevState = state
 # Name:			.
 # Summary:		.
 # Desc:			Takes a CSV item and returns a list of flowables. Does not work on observe.
@@ -135,12 +150,16 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
 # Input:		
 #               df, summaryTable are modified
 # Output:		Flowables and df and summary table   
-def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
+def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
     #init
     #df_copy = df  #need to deepcopy?
-    
-    state = ProcessState(1, None, None, None, None)
-    prevState = state
+
+    #state = ProcessState(1, None, None, None, None)
+        
+    #prevState = state
+
+    #cringe, so fix as soon as possible
+    global state, prevState, df
     
     df_calc = ca.calcDataFrame(page)
 
@@ -189,15 +208,14 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
 
         else:
             props['Error'] = 'Set failed'
-    
+
     if state.is_complete_cycle():
-        df = df.append({
-            'Cycle': state.cycle,
-            'Set Icc': state.set_icc,
-            'Set Voltage': state.set_voltage,
-            'R_on': state.r_on,
-            'R2': state.r2
-        }, ignore_index=True)
+        newDf = pandas.DataFrame(data=[[state.cycle, state.set_icc, state.set_voltage, state.r_on, state.r2]],
+                                columns = ['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'])
+
+        df = pandas.concat([df, newDf], ignore_index=True)
+        df = df
+        print(df)
         summaryTable.append([state.cycle, state.set_icc, f'{state.set_voltage:.2f}', f'{state.r_on:.2f}', f'{state.r2:.3f}'])
         prevState = state
         state = ProcessState(state.cycle + 1, None, None, None, None)
@@ -243,7 +261,9 @@ def __getIccRonPlot(tmpDir, df) -> Image:
 
     fig = plt.figure(dpi=300)
     fig.patch.set_facecolor('white')
-    sns.scatterplot(data=df.loc[df.R2 >= 0.98, :], x="Set Icc", y="R_on")
+    print(df)
+    #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
+    sns.scatterplot(data=df.loc[df.R_on < 20000, :].loc[df.R2 >= 0.98 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
     plt.ylabel("$R_{on}$ [Ω]")
