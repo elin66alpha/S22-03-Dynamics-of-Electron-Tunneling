@@ -1,5 +1,0 @@
-;Format: RunID
-[TestHistory]
-TotalRuns=31
-FactoryRuns=0
-TopSelRun=31
