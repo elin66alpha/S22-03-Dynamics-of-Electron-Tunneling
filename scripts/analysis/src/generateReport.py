@@ -107,6 +107,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     ]
 
     pages = []
+    
 
     for i, page in enumerate(items):  #items is a list of all CSV files belonging to a single cell
 
@@ -128,9 +129,30 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         if i < len(items) - 1:
             pages.append(PageBreakIfNotEmpty())
     
+    setfig = plt.figure(figsize=(10, 4), dpi=300)
+    plt.title('Sets')
+    plt.xlabel("Voltage $V$ [V]")
+    plt.ylabel("Current $I$ [A]")
+    for i, page in enumerate(items):
+        if page.activity == 'set':
+            plt.plot(page.probeA_voltage, page.probeA_current)
+    plt.savefig(f'{tmpDir}/sets.png')
+
+    resetfig = plt.figure(figsize=(10, 4), dpi=300)
+    plt.title('Resets')
+    plt.xlabel("Voltage $V$ [V]")
+    plt.ylabel("Current $I$ [A]")
+    for i, page in enumerate(items):
+        if page.activity == 'reset':
+            plt.plot(page.probeA_voltage, page.probeA_current)
+    plt.savefig(f'{tmpDir}/resets.png')
+
+
     summaryTableFlowable = Table(summaryTable)
     flowables.append(summaryTableFlowable)
     flowables.append(__getIccRonPlot(tmpDir, df))
+    flowables.append(__getImage(f'{tmpDir}/sets.png', 600))
+    flowables.append(__getImage(f'{tmpDir}/resets.png', 600))
     flowables.append(PageBreakIfNotEmpty())
 
     flowables += pages
