@@ -56,7 +56,7 @@ class ProcessState:
 # Output:		None.
 def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfFolder: str):
     #init
-    cellCoord = csvItems[0].targetCellCoord
+    cellCoord = csvItems[0].heatedCellCoord
     pdfFolder = pdfFolder
     pdf_name = f"{pdfFolder}/({cellCoord})_characteristics.pdf"
 

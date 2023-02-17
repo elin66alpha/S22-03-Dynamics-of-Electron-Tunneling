@@ -38,8 +38,8 @@ class CsvFile :
 
         # coordinates of cells involved. If 2 probe then only target cell is valid.
         cellCoords = self.__getCellCoord()
-        self.targetCellCoord   = cellCoords['cell_t']  #ex. "wafer1,0,0,-1,-1,0,0"
-        self.neighborCellCoord = cellCoords['cell_n']  
+        self.heatedCellCoord   = cellCoords['cell_t']  #ex. "wafer1,0,0,-1,-1,0,0"
+        self.observedCellCoord = cellCoords['cell_n']  
 
         timeDict = self.__getTimeStamp()
         self.timeStamp_whole    = timeDict['whole']
