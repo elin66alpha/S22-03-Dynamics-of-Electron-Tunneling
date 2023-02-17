@@ -319,7 +319,7 @@ class CsvFile :
     # Output:		The activity, as a string.
     def __getCellActivity(self) -> str :
         if self.isThreeProbe :
-            return '<csv is 3-probe measurement. No Activity Value>'
+            return self.csvFileName.split('_')[3].lower()  #'<csv is 3-probe measurement. No Activity Value>'
         else :
             return self.csvFileName.split('_')[2].lower()
 
@@ -336,16 +336,18 @@ class CsvFile :
     def __getActivityParameters(self) -> typing.Dict :
         aParams = {}  #result
 
-        fileNameSplit = self.csvFileName.split('_')
+        fileNameSplit = self.csvFileName.split('_')  # ex.(wafer1,0,0,-1,-1,0,1)_2202241139_reset_0_-3_1_5mA.csv
+                                                     #    {position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}
+                                                     #    {position}_{position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}
 
-        if self.isThreeProbe :
-            aParams['startV']                 = '<3 probe, so invalid>'
-            aParams['endV']                   = '<3 probe, so invalid>'
-            aParams['rampRate']               = '<3 probe, so invalid>'
-            aParams['complianceCurrent']      = '<3 probe, so invalid>'
-            aParams['complianceCurrentUnits'] = '<3 probe, so invalid>'
-            aParams['platinumV']              = '<platinum voltage should be entered in comments>'
-            aParams['copperV']                = '<platinum voltage should be entered in comments>'
+        if self.isThreeProbe :  #assume observe 
+            aParams['startV']                 = fileNameSplit[4] + 'V'
+            aParams['endV']                   = fileNameSplit[5] + 'V'
+            aParams['rampRate']               = fileNameSplit[6] + 'V/s'  #'<3 probe, so invalid>'
+            aParams['complianceCurrent']      = float(fileNameSplit[-1][:-6])  #'<3 probe, so invalid>'
+            aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]  #'<3 probe, so invalid>'
+            aParams['platinumV']              = '<platinum voltage should be entered in comments>'  #assume terminal A is copper, and know vmin/vmax is from AV column
+            aParams['copperV']                = '<platinum voltage should be entered in comments>'  #assume terminal B is platinum
             aParams['runFolderName']          = fileNameSplit[:-4]
 
         else :

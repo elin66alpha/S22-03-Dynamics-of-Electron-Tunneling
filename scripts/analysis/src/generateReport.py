@@ -150,7 +150,9 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
         Paragraph(page.activity, styles["Heading2"]),
         Paragraph(f'——————————————————————————————————', styles["Heading2"])
     ]
-
+    #print(page.csvFileName)
+    #print(page.complianceCurrent)
+    #print()
     props = OrderedDict({
         'Time': page.timeStamp_time12hr,
         'Icc': f'{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
