@@ -77,7 +77,10 @@ def generate_reports(path, csvData):
 # Input:		Path for CSVs, as a string.
 # Output:		Organized files, as an ordered dictionary, csvData.
 def __organizeCSVs(inputDataPath) -> OrderedDict :
+    # find all csv files, filter out README.md
     csvFileNames = os.listdir(inputDataPath)
+    if "README.md" in csvFileNames:
+        csvFileNames.remove("README.md")
 
     # first fill up entire dictionary
     cellDataDict = OrderedDict()
