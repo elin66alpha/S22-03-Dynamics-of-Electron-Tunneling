@@ -6,7 +6,7 @@ from datetime import datetime
 import typing
 import numpy as np
 import matplotlib.pyplot as plt
-import CellAnalyzer
+
 
 import src.utils.csvParser as csvParser
 
@@ -81,7 +81,7 @@ class CsvFile :
         self.probeC_voltage = axisObject['probeC_voltage']
         self.probeC_current = axisObject['probeC_current']
 
-        self.setVoltage
+
 
     # Name:			.
     # Summary:		.
@@ -431,14 +431,14 @@ class CsvFile :
     #
     # Input:		The file data, as a csvParser.
     # Output:		A dictionary containing an entry for every possible data column in the file, typing.Dict
-    def __getAnalysis(self) -> typing.Dict :
+    """def __getAnalysis(self) -> typing.Dict :
         analysisDict = {}
 
         analysisDict['setVoltage'] = '<not set or form, so invalid>'
         analysisDict['trueRampRate'] = '<observe or three probe, so invalid>'
         analysisDict['cell_tResistance'] = '<not reset, so invalid>'
         analysisDict['dataFrame'] = CellAnalyzer.calcDataFrame(self)
-        analysisDict['cell_tState'] = CellAnalyzer
+        #analysisDict['cell_tState'] = CellAnalyzer
 
         if self.activity in ['set', 'form']:
             analysisDict['setVoltage'] = CellAnalyzer.calcSetVoltage(self, analysisDict['dataFrame'])
@@ -449,5 +449,5 @@ class CsvFile :
         if self.activity in 'reset':
             analysisDict['cell_tResistance'] = CellAnalyzer.calcResistance(self, analysisDict['dataFrame'])
 
-        return analysisDict
+        return analysisDict"""
     
