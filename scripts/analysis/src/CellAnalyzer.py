@@ -81,6 +81,42 @@ def calcSetVoltage(csv_file, df, set_thresh: float=0.9):  #self.df
 
     return voltage
 
+# Name:			calcCellState
+# Summary:		.
+# Desc:			Calculates the state the cell is currently in at end of calculation.
+#    
+# Refinement:	.
+#
+# Input:		csv_file : csv file object that is used for calculation
+#               df : dataframe of the calculation
+#               rThresh : resistance threshold for determining set or reset, set to 5k Ohm by default
+# Output:		string : 'set', 'reset', or 'unknown' 
+def calcCellState(csv_file, df, rThresh = 5000):
+    i = df['AI'].to_numpy()
+    v = df['AV'].to_numpy()
+
+    r = abs(v / i)
+
+    sampleR = r[-1]
+
+    #handle the case of being at compliance current
+    if (i[-1] / float(csv_file.complianceCurrent)) > 0.90:
+        iccThresh = df['AI'] / float(csv_file.complianceCurrent)
+        crosses = np.argwhere(iccThresh > 0.90)
+
+        #cell starts at compliance current so resistance can't be calculated
+        if len(crosses) == 0:
+            return 'unknown'
+        #prone to being an overestimate, but should be accurate enough for this purpose
+        sampleR = r[crosses[-1][0]]
+
+    if sampleR > rThresh:
+        return 'set'
+    else:
+        return 'reset'
+
+
+
 # Name:			.
 # Summary:		.
 # Desc:			.
@@ -99,11 +135,11 @@ def __linear_idx(df, linear_thresh: float=5e-3):
     v = df['AV'].values
 
     # take the average voltage steps as 'dv' for derivative di/dv
-    dv = np.mean(np.diff(v))
+    dv = np.convolve(v, np.array([-0.5, 0, 0.5]), mode = 'valid')#np.mean(np.diff(v))
     # use convolution to perform the second order formula, will crop off first and last data element
     di2 = np.convolve(i, np.array([1, -2, 1]), mode='valid')
 
-    didv2 = di2 / dv ** 2
+    didv2 = di2 / (dv * dv)
 
     # check for large jumps in 2nd derivative against hyperparameter
     # giving a binary signal
@@ -157,7 +193,7 @@ def calcResistance(csv_file, df):
     if not csv_file.activity == 'reset':
         raise Exception(f"resistance() called on data from {csv_file.activity}")
     
-    idx = __linear_idx(df)
+    idx = __linear_idx(df, linear_thresh=0.001)
     i = df['AI'].values
     v = df['AV'].values
 
@@ -165,9 +201,11 @@ def calcResistance(csv_file, df):
     if idx is not None:
         i, v = i[:idx], v[:idx]
 
+    if np.any(np.isnan(v[:idx])) or np.any(np.isnan(i[:idx])):
+        print("Nan Detected")
+
     # now we will take the data up until idx and perform a linear fit to it to obtain the resistance
-    s_on, _, r, _, _ = linregress(v[:idx], i[:idx])
-    r_on = 1 / s_on     # slope of IV curve is conductance
+    r_on, _, r, _, _ = linregress(i[:idx], v[:idx])
     r2 = r ** 2    # store R^2 value from linear fit too
 
     return r_on, r2  #add r2 as an output 
@@ -190,7 +228,7 @@ def calcRampRate(csv_file, df) -> float:
     crosses = np.argwhere(d)
 
     if len(crosses) == 0:
-        return df['AV'][-1] / df['Time'][-1]
+        return df['AV'][len(df['AV'].values)-1] / df['Time'][len(df['Time'].values)-1]
     
     else:
         idx = crosses[0][0]
