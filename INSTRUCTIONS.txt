@@ -17,7 +17,7 @@ Overview
 	  
 Run Code
   
-  1. if not already installed, need to pip install 
+  1. if not already installed, need to pip install (verify me*)
 	numpy
 	matplotlib 
 	pandas
@@ -25,6 +25,17 @@ Run Code
 	reportlab, https://pypi.org/project/reportlab/
 	seaborn
 	tqdm
-  2. From the repo dir, run:
-	"python scripts/analysis"
+	xlrd
+  
+  2. Copy raw data (follow instructions in /resources/raw_data/README.md)
+  
+  3. From the repo dir, run: (using Windows powershell)
+	`python $pwd/scripts/processing/keithley_import.py <your_log_file_name_without_extension> <date>`
+	
+	a. For <date>, can either write ONE date or `all`. Using one date will only run data in log file from that date.
+	   It also needs to match the string in the log file. ex. 02/11/2023 vs. 2/11/2023 matters.
+
+  3. From the repo dir, run: (using Windows powershell)
+	`python $pwd/scripts/analysis/`
+	
   4. done! report(s) are generated
