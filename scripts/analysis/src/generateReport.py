@@ -61,7 +61,7 @@ df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'],
 # Output:		None.
 def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfFolder: str):
     #init
-    cellCoord = csvItems[0].targetCellCoord
+    cellCoord = csvItems[0].heatedCellCoord
     pdfFolder = pdfFolder
     pdf_name = f"{pdfFolder}/({cellCoord})_characteristics.pdf"
 
@@ -191,7 +191,9 @@ def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
         Paragraph(page.activity, styles["Heading2"]),
         Paragraph(f'——————————————————————————————————', styles["Heading2"])
     ]
-
+    #print(page.csvFileName)
+    #print(page.complianceCurrent)
+    #print()
     props = OrderedDict({
         'Time': page.timeStamp_time12hr,
         'Icc': f'{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',

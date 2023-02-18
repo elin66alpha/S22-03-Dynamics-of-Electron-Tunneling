@@ -77,7 +77,10 @@ def generate_reports(path, csvData):
 # Input:		Path for CSVs, as a string.
 # Output:		Organized files, as an ordered dictionary, csvData.
 def __organizeCSVs(inputDataPath) -> OrderedDict :
+    # find all csv files, filter out README.md
     csvFileNames = os.listdir(inputDataPath)
+    if "README.md" in csvFileNames:
+        csvFileNames.remove("README.md")
 
     # first fill up entire dictionary
     cellDataDict = OrderedDict()
@@ -85,17 +88,17 @@ def __organizeCSVs(inputDataPath) -> OrderedDict :
         csvItemObject = CsvFile(inputDataPath + csv)
 
         # if target cell doesn't exist in dict create empty list then append to it, otherwise just append.
-        if cellDataDict.get(f'{csvItemObject.targetCellCoord}') == None :
-            cellDataDict[f'{csvItemObject.targetCellCoord}'] = []
+        if cellDataDict.get(f'{csvItemObject.heatedCellCoord}') == None :
+            cellDataDict[f'{csvItemObject.heatedCellCoord}'] = []
 
-        cellDataDict[f'{csvItemObject.targetCellCoord}'].append(csvItemObject)  #add csvItem object to result
+        cellDataDict[f'{csvItemObject.heatedCellCoord}'].append(csvItemObject)  #add csvItem object to result
 
         # do same as above but for neighbor cell
-        if csvItemObject.neighborCellCoord[0] != '<' :  #when neighbor cell exists
+        if csvItemObject.observedCellCoord[0] != '<' :  #when neighbor cell exists
             #update result
-            if cellDataDict.get(f'{csvItemObject.neighborCellCoord}') == None :
-                cellDataDict[f'{csvItemObject.neighborCellCoord}'] = []
-            cellDataDict[f'{csvItemObject.neighborCellCoord}'].append(csvItemObject)  #add csvItem object to result
+            if cellDataDict.get(f'{csvItemObject.observedCellCoord}') == None :
+                cellDataDict[f'{csvItemObject.observedCellCoord}'] = []
+            cellDataDict[f'{csvItemObject.observedCellCoord}'].append(csvItemObject)  #add csvItem object to result
 
     # then time order each entry in the dictionary
     def sortingKey(csvItemObj: CsvFile) -> int :
@@ -128,7 +131,7 @@ def __generateSummaryReport(output_path, csvData) -> dict:
 
         firstCSV = value[0]
 
-        cell_t_split = firstCSV.targetCellCoord.split(',')
+        cell_t_split = firstCSV.heatedCellCoord.split(',')
         arrayCoordinates = f'({cell_t_split[1]},{cell_t_split[2]})'
 
         cellSummaryDict["cellSize"] = cellSizes[arrayCoordinates]
@@ -167,7 +170,7 @@ def __generateSummaryReport(output_path, csvData) -> dict:
 #                   Path to output the pdf, as a string.
 # Output:		None.
 def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: str) -> None:
-    cellCoord = csvItemObjList[0].targetCellCoord
+    cellCoord = csvItemObjList[0].heatedCellCoord
     cellSummaryDict = summaryDict[cellCoord]
     
     # setup document
