@@ -6,11 +6,16 @@ Into this (top) directory...
 1. Move your log file. (must be .csv)
 2. Move your raw data (only Run1, Run2, ... folders)
 
-ex. 
+example directory: 
+
+README.md
 
 log.csv
-README.md
+
 -Run1
+
 --data@1[1].xls
+
 --run.xml
+
 --etc...
