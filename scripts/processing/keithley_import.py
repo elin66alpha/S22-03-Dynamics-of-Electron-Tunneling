@@ -29,7 +29,7 @@ def find_min_max(table):
     bvmin = int(min(table.col_values(2 ,start_rowx=1)))
     bvmax = int(max(table.col_values(2 ,start_rowx=1)))
     vmin = min(avmin,bvmin)
-    vmax = max(avmin,bvmin)
+    vmax = max(avmax,bvmax)
     return vmin,vmax
 
 def keithley_time(folder_name):
