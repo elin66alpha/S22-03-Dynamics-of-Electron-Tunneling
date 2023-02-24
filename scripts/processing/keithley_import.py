@@ -1,3 +1,8 @@
+# Name:			keithley_import
+# Summary:		.
+# Refinement:   Change wafer ID to only need an integer, and therefore have much higher max. (now only has new wafer and old wafer)
+#               Parse data from raw data, not log file when able.
+#               Potentially, change date arg to default to "all" so make it optional arg.
 
 import os
 import argparse
@@ -51,7 +56,7 @@ def check_blank_line(line):
         if (line[3] != '' and line[4]!='' and line[8] !=''):
             return True
     if(line[0] != 'Date'):
-        print(f'ERROR: please check the lab note format, {line} is missing parameters')
+        print(f'ERROR: please check the lab note format, {line} is either invalid or missing parameters')
     return False
 
 def check_blank_cell(str):
@@ -63,9 +68,7 @@ def check_blank_cell(str):
     return changed_str
         
 
-def sort(line,date):
-
-    folder_name = ''
+def sort(line, date, reso_dir):
     position= ''
 
     activity= ''
@@ -74,15 +77,16 @@ def sort(line,date):
     wafer = ''
     if(check_blank_line(line)):
         if line[0] == date or date == 'all':
-            folder_name = line[2]
-            if(line[2] == 'R'):
+            if((line[2] == 'R') or (line[2] == 'R - O') or (line[2] == 'R - H')):  #Reset
                 activity = 'reset'
-            elif(line[2] == 'S'):
+            elif((line[2] == 'S') or (line[2] == 'S - O') or (line[2] == 'S - H')):  #Set
                 activity = 'set'
-            elif(line[2] == 'F'):
+            elif(line[2] == 'F'):  #Form
                 activity = 'form'
-            elif(line[2] == 'VS' or line[2] == 'H'or line[2] == 'C'):
+            elif(line[2] == 'VS' or line[2] == 'H'or line[2] == 'C'):  #Observe is Verify_Set, Heating, and Cooling
                 activity = 'observe'
+            else:
+                print("ERROR: Invalid activity value found in log file.")
 
             wafer = check_blank_cell(line[1])
             if(line[1] == 'Old Wafer'):
@@ -90,7 +94,7 @@ def sort(line,date):
             elif(line[1] == 'New Wafer (Scratched)'):
                 wafer = '1'
             else:
-                wafer = '?'
+                wafer = '999'  #'?' causes errors in file open for csv!
 
 
             if(line[5]):
@@ -100,17 +104,21 @@ def sort(line,date):
             icc = check_blank_cell(line[6]).replace(' ','')
             rr =  check_blank_cell(line[7])
             run_num = line[8].split(',')
+            
             for num in run_num:
+                num = str(num).replace(" ", "")  #remove spaces in list
+                
+                runDir = f'{reso_dir}raw_data/Run{str(num)}'  
+                xlsDir = f'{runDir}/data@1[{str(num)}].xls'  
                 try:
-                    raw = xlrd.open_workbook(
-                        f'{folder_name}/Run{str(num)}/data@1[{str(num)}].xls')
-                    time = keithley_time(f'{folder_name}/Run{str(num)}')
+                    raw = xlrd.open_workbook(xlsDir)
+                    time = keithley_time(runDir)
                     time = time.strftime(r'%y%m%d%H%M%S')
                     table = raw.sheet_by_index(0)
                     vmin, vmax= find_min_max(table)
                     file_name = f'{position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}'
-                    
-                    with open(f'orgnized/{file_name}.csv', 'w', encoding='utf-8') as f:
+                    #create/overwrite csv file
+                    with open(f'{reso_dir}processed_data/{file_name}.csv', 'w', encoding='utf-8') as f:
                         write = csv.writer(f)
                         write.writerow(['---'])
                         write.writerow([line[9]])
@@ -120,20 +128,23 @@ def sort(line,date):
                             write.writerow(row_value)
                     print(f'MESSAGE: {file_name} is generated successfully. Ignore the warning.')
                 except:
-                    print( f'ERROR: {folder_name}/Run{str(num)}/data@1[{str(num)}].xls is not found')
+                    print(f'ERROR: {file_name} was not generated.')
  
-
+#parse lab manually populated log file to get information about raw data
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('log_file', type=str)
+    parser.add_argument('log_file_name', type=str)
     parser.add_argument('date', type=str)
     args = parser.parse_args()
- 
-    try:
-        os.makedirs('orgnized')
-    except FileExistsError:
-        pass
+    
+    curDir = os.getcwd()  #current working directory
+    curDir = curDir.replace("\\", "/")
+    resourcesDir = curDir + "/resources/"
+    logFile = resourcesDir + "raw_data/" + args.log_file_name + ".csv"
 
-    csv_reader = csv.reader(open(args.log_file))
+    csv_reader = csv.reader(open(logFile, newline = ''))  #set newline to prevent /r/n /n conflicts
+    i = 0
     for line in csv_reader:
-        sort(line,args.date)
+        if (i > 0):  #skip header row
+            sort(line, args.date, resourcesDir)
+        i = i + 1

@@ -30,12 +30,27 @@ def parseCsv(csvPath: str):
     #extract and store file 
     # need to be excecuted in this order here, since methods have order dependency
     comments, lines, lastCommentLineIdx = __extractComments(lines, lastCommentLineIdx)
+    lines = __removeBlankLines(lines, lastCommentLineIdx)
     title, lines, lastCommentLineIdx = __extractColumnTitles(lines, lastCommentLineIdx)
     columns  = __extractColumnData(lines, lastCommentLineIdx, title)
 
     return title, comments, columns 
 
 #PRIVATE
+
+# removes any blank lines after the comment section
+def __removeBlankLines(lines, lastCommentLineIdx):
+    result = []
+    i = 0
+    for line in lines:
+        if (i <= lastCommentLineIdx):  #copy comment section
+            result.append(line)
+        if (i > lastCommentLineIdx):  #remove blanks after comment section
+            if (line and line.strip()):  #when string is NOT empty OR blank
+                result.append(line)
+        i = i + 1
+    return result
+
 
 # Name:			__extractComments
 # Summary:		Search file for comments.
