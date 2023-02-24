@@ -60,7 +60,8 @@ class CsvFile :
         self.endVoltage             = activityParameters['endV']
         self.rampRate               = activityParameters['rampRate'] # in volts per second
         self.complianceCurrent      = activityParameters['complianceCurrent'] 
-        self.complianceCurrentUnits = activityParameters['complianceCurrentUnits']
+        #self.complianceCurrentUnits = activityParameters['complianceCurrentUnits']
+        self.complianceCurrentUnits = 'A'
         self.platinumVoltage        = activityParameters['platinumV']
         self.copperVoltage          = activityParameters['copperV']
         self.runFolderName          = activityParameters['runFolderName']
@@ -342,15 +343,15 @@ class CsvFile :
         fileNameSplit = self.csvFileName.split('_')  # ex.(wafer1,0,0,-1,-1,0,1)_2202241139_reset_0_-3_1_5mA.csv
                                                      #    {position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}
                                                      #    {position}_{position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}
-
+        fileNameSplit[-1] = fileNameSplit[-1][:-4]  #remove .csv
         if self.isThreeProbe :  #assume observe 
             aParams['startV']                 = fileNameSplit[4] + 'V'
             aParams['endV']                   = fileNameSplit[5] + 'V'
             aParams['rampRate']               = fileNameSplit[6] + 'V/s'  #'<3 probe, so invalid>'
-            aParams['complianceCurrent']      = float(fileNameSplit[-1][:-6])  #'<3 probe, so invalid>'
-            aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]  #'<3 probe, so invalid>'
-            aParams['platinumV']              = '<platinum voltage should be entered in comments>'  #assume terminal A is copper, and know vmin/vmax is from AV column
-            aParams['copperV']                = '<platinum voltage should be entered in comments>'  #assume terminal B is platinum
+            aParams['complianceCurrent']      = float(fileNameSplit[-1])  #'<3 probe, so invalid>'
+            #aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]  #'<3 probe, so invalid>'
+            aParams['platinumV']              = '<platinum voltage should be entered in comments>'  #assume terminal B is platinum
+            aParams['copperV']                = '<platinum voltage should be entered in comments>'  #assume terminal A is copper
             aParams['runFolderName']          = fileNameSplit[:-4]
 
         else :
@@ -360,8 +361,8 @@ class CsvFile :
                 aParams['startV']                 = fileNameSplit[3] + 'V'
                 aParams['endV']                   = fileNameSplit[4] + 'V'
                 aParams['rampRate']               = fileNameSplit[5] + 'V/s'
-                aParams['complianceCurrent']      = float(fileNameSplit[-1][:-6])
-                aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]
+                aParams['complianceCurrent']      = float(fileNameSplit[-1])  #use decimal.Decimal(icc) if seeing arithmetic error
+                #aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]
                 aParams['platinumV']              = '<platinum voltage should be entered in comments>'
                 aParams['copperV']                = '<platinum voltage should be entered in comments>'
 
@@ -369,8 +370,8 @@ class CsvFile :
                 aParams['startV']                 = '<2 probe observe activity, so invalid>'
                 aParams['endV']                   = '<2 probe observe activity, so invalid>'
                 aParams['rampRate']               = '<2 probe observe activity, so invalid>'
-                aParams['complianceCurrent']      = float(fileNameSplit[-1][:-6])
-                aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]
+                aParams['complianceCurrent']      = float(fileNameSplit[-1])
+                #aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]
                 aParams['platinumV']              = fileNameSplit[3] + 'V'
                 aParams['copperV']                = fileNameSplit[4] + 'V'
 
@@ -379,7 +380,7 @@ class CsvFile :
                 aParams['endV']                   = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['rampRate']               = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['complianceCurrent']      = f'<{self.activity} is an invalid 2 probe activity parameter>'
-                aParams['complianceCurrentUnits'] = f'<{self.activity} is an invalid 2 probe activity parameter>'
+                #aParams['complianceCurrentUnits'] = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['platinumV']              = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['copperV']                = f'<{self.activity} is an invalid 2 probe activity parameter>'
 

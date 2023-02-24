@@ -122,7 +122,6 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
             continue
 
         for flowable in __generatePage(page, i, tmpDir, summaryTable):  #df and summaryTable modified by method
-            print(df)
             pages.append(flowable)
         
         # put each operation on its own page
@@ -191,9 +190,6 @@ def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
         Paragraph(page.activity, styles["Heading2"]),
         Paragraph(f'——————————————————————————————————', styles["Heading2"])
     ]
-    #print(page.csvFileName)
-    #print(page.complianceCurrent)
-    #print()
     props = OrderedDict({
         'Time': page.timeStamp_time12hr,
         'Icc': f'{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
@@ -239,7 +235,6 @@ def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
 
         df = pandas.concat([df, newDf], ignore_index=True)
         df = df
-        print(df)
         summaryTable.append([state.cycle, state.set_icc, f'{state.set_voltage:.2f}', f'{state.r_on:.2f}', f'{state.r2:.3f}'])
         prevState = state
         state = ProcessState(state.cycle + 1, None, None, None, None)
@@ -285,7 +280,6 @@ def __getIccRonPlot(tmpDir, df) -> Image:
 
     fig = plt.figure(dpi=300)
     fig.patch.set_facecolor('white')
-    print(df)
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
     sns.scatterplot(data=df.loc[df.R_on < 20000, :].loc[df.R2 >= 0.98 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
     plt.title("Resistance")
