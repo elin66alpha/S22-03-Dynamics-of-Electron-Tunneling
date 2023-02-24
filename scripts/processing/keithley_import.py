@@ -77,9 +77,9 @@ def sort(line, date, reso_dir):
     wafer = ''
     if(check_blank_line(line)):
         if line[0] == date or date == 'all':
-            if(line[2] == 'R'):  #Reset
+            if((line[2] == 'R') or (line[2] == 'R - O') or (line[2] == 'R - H')):  #Reset
                 activity = 'reset'
-            elif(line[2] == 'S'):  #Set
+            elif((line[2] == 'S') or (line[2] == 'S - O') or (line[2] == 'S - H')):  #Set
                 activity = 'set'
             elif(line[2] == 'F'):  #Form
                 activity = 'form'
