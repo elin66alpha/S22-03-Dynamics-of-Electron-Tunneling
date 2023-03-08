@@ -45,7 +45,7 @@ class ProcessState:
 #very disgusting solution
 state = ProcessState(1, None, None, None, None)
 prevState = state
-df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'], copy=True)
+#df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'], copy=True)
             
 # Name:			.
 # Summary:		.
@@ -73,7 +73,9 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     lastAccessed = cellSummaryDict['lastAccessed']
     global df
     df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'], copy=True)
+    df.loc[0] = [1, None, None, None, None]
     summaryTable = [["Cycle #", "Set Icc (μA)", "Set Voltage (V)", "R_on (Ω)", "R2"]]
+    #summaryTable.append([None, None, None, None, None])
     
     #generate report 
     
@@ -113,6 +115,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
 
         #Once again, cringe, so fix as soon as possible
         global state, prevState
+        
 
         if i == 0:
             state = ProcessState(1, None, None, None, None)
@@ -121,7 +124,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         if page.activity == 'observe':
             continue
 
-        for flowable in __generatePage(page, i, tmpDir, summaryTable):  #df and summaryTable modified by method
+        for flowable in __generatePage(page, i, tmpDir, df, summaryTable):  #df and summaryTable modified by method
             print(df)
             pages.append(flowable)
         
@@ -172,7 +175,7 @@ prevState = state
 # Input:		
 #               df, summaryTable are modified
 # Output:		Flowables and df and summary table   
-def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
+def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     #init
     #df_copy = df  #need to deepcopy?
 
@@ -181,7 +184,10 @@ def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
     #prevState = state
 
     #cringe, so fix as soon as possible
-    global state, prevState, df
+    global state, prevState
+
+    stateIndex = len(df.index) - 1
+    prevStateIndex = min(0, stateIndex - 1)
     
     df_calc = ca.calcDataFrame(page)
 
@@ -200,13 +206,14 @@ def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
         'Voltage Range': f'{page.startVoltage}  →  {page.endVoltage}',
         'Target Ramp Rate': f'{page.rampRate}',
         'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
-        'Cycle': state.cycle
+        'Cycle': df.loc[stateIndex, 'Cycle']#state.cycle
     })
 
     if page.activity == 'reset':
         # successful reset
         if ca.calcResistance(page, df_calc):
             state.r_on, state.r2 = ca.calcResistance(page, df_calc)
+            #df.loc[stateIndex, 'R_on', 'R2']
 
             if state.set_icc is None:
                 state.set_icc = prevState.set_icc
@@ -237,8 +244,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, summaryTable) -> List:
         newDf = pandas.DataFrame(data=[[state.cycle, state.set_icc, state.set_voltage, state.r_on, state.r2]],
                                 columns = ['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'])
 
-        df = pandas.concat([df, newDf], ignore_index=True)
-        df = df
+        df.loc[len(df.index)] = [state.cycle, state.set_icc, state.set_voltage, state.r_on, state.r2]#pandas.concat([df, newDf], ignore_index=True)
         print(df)
         summaryTable.append([state.cycle, state.set_icc, f'{state.set_voltage:.2f}', f'{state.r_on:.2f}', f'{state.r2:.3f}'])
         prevState = state
