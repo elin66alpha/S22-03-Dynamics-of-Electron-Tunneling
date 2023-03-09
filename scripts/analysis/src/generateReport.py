@@ -22,30 +22,6 @@ from reportlab.lib import utils
 import src.CellAnalyzer as ca
 from src.utils.CsvFile import CsvFile
 
-# Name:			ProcessState
-# Summary:		Datatype for __.
-# Desc:			.
-#       
-# Refinement:	.
-@dataclass
-class ProcessState:
-    cycle: int
-    set_icc: str
-    set_voltage: float
-    r_on: float
-    r2: float
-
-    def is_complete_cycle(self):
-        return self.cycle is not None \
-            and self.set_icc is not None \
-            and self.set_voltage is not None \
-            and self.r_on is not None \
-            and self.r2 is not None
-
-#very disgusting solution
-state = ProcessState(1, None, None, None, None)
-prevState = state
-#df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'], copy=True)
             
 # Name:			.
 # Summary:		.
@@ -72,8 +48,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     timesAccessed = cellSummaryDict['timesAccessed']
     lastAccessed = cellSummaryDict['lastAccessed']
     global df
-    df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'], copy=True)
-    df.loc[0] = [1, None, None, None, None]
+    df = pandas.DataFrame(columns=['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2', 'Set Data', 'Reset Data'], copy=True)
     summaryTable = [["Cycle #", "Set Icc (μA)", "Set Voltage (V)", "R_on (Ω)", "R2"]]
     #summaryTable.append([None, None, None, None, None])
     
@@ -112,14 +87,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     
 
     for i, page in enumerate(items):  #items is a list of all CSV files belonging to a single cell
-
-        #Once again, cringe, so fix as soon as possible
-        global state, prevState
         
-
-        if i == 0:
-            state = ProcessState(1, None, None, None, None)
-            prevState = state
         
         if page.activity == 'observe':
             continue
@@ -165,8 +133,6 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
 
     shutil.rmtree(tmpDir)   
 
-state = ProcessState(1, None, None, None, None)     
-prevState = state
 # Name:			.
 # Summary:		.
 # Desc:			Takes a CSV item and returns a list of flowables. Does not work on observe.
@@ -176,18 +142,13 @@ prevState = state
 #               df, summaryTable are modified
 # Output:		Flowables and df and summary table   
 def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
-    #init
-    #df_copy = df  #need to deepcopy?
 
-    #state = ProcessState(1, None, None, None, None)
-        
-    #prevState = state
 
-    #cringe, so fix as soon as possible
-    global state, prevState
+    if len(df.index) == 0:
+        df.loc[0, 'Cycle'] = int(1)
 
     stateIndex = len(df.index) - 1
-    prevStateIndex = min(0, stateIndex - 1)
+    prevStateIndex = max(0, len(df.index) - 2)
     
     df_calc = ca.calcDataFrame(page)
 
@@ -208,23 +169,27 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
         'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
         'Cycle': df.loc[stateIndex, 'Cycle']#state.cycle
     })
-
+    reset_cell = False
     if page.activity == 'reset':
         # successful reset
         if ca.calcResistance(page, df_calc):
-            state.r_on, state.r2 = ca.calcResistance(page, df_calc)
-            #df.loc[stateIndex, 'R_on', 'R2']
+            resistance, r2 = ca.calcResistance(page, df_calc)
 
-            if state.set_icc is None:
-                state.set_icc = prevState.set_icc
-                state.set_voltage = prevState.set_voltage
+            #Is this part necessary?
+            #if df.loc[stateIndex, 'Set Icc'] is None:
+            #    df.loc[stateIndex, 'Set Icc'] = df.loc[prevStateIndex, 'Set Icc']
+            #    df.loc[stateIndex, 'Set Voltage'] = df.loc[prevStateIndex, 'Set Voltage']
 
-            props['Resistance'] = f'{state.r_on:.2f} Ω'
-            props['Linear Fit R2'] = f'{state.r2:.3f}'
-        
+            df.loc[stateIndex, 'R_on'] = resistance
+            df.loc[stateIndex, 'R2'] = r2
+            props['Resistance'] = f'{resistance:.2f} Ω' #f'{state.r_on:.2f} Ω'
+            props['Linear Fit R2'] = f'{r2:.3f}'
+
         else:
             props['Error'] = 'Too nonlinear/failed'
-        
+        if ca.calcCellState(page, df_calc) == 'reset':
+            reset_cell = True
+            df.loc[stateIndex, 'Reset Data'] = i
         #test code not to be merged
         ca.plot_energy(page, df_calc, f'{tmpDir}/ca_plot_energy{i}.png')
         flowables.append(__getImage(f'{tmpDir}/ca_plot_energy{i}.png', width=400))
@@ -232,23 +197,24 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     else:
         # successful set/form
         if ca.calcSetVoltage(page, df_calc):
-            state.set_icc = page.complianceCurrent
-            state.set_voltage = ca.calcSetVoltage(page, df_calc)
+            df.loc[stateIndex, 'Set Icc'] = page.complianceCurrent
+            df.loc[stateIndex, 'Set Voltage'] = ca.calcSetVoltage(page, df_calc)
 
-            props['Set Voltage'] = f'{state.set_voltage:.2f} V'
+            set_voltage = df.loc[stateIndex, 'Set Voltage']
+
+            props['Set Voltage'] = f'{set_voltage:.2f} V'
+            df.loc[stateIndex, 'Set Data'] = i
 
         else:
             props['Error'] = 'Set failed'
 
-    if state.is_complete_cycle():
-        newDf = pandas.DataFrame(data=[[state.cycle, state.set_icc, state.set_voltage, state.r_on, state.r2]],
-                                columns = ['Cycle', 'Set Icc', 'Set Voltage', 'R_on', 'R2'])
 
-        df.loc[len(df.index)] = [state.cycle, state.set_icc, state.set_voltage, state.r_on, state.r2]#pandas.concat([df, newDf], ignore_index=True)
+    cycle_complete = reset_cell
+
+    if cycle_complete:
+        df.loc[len(df.index), 'Cycle'] = df.loc[stateIndex, 'Cycle'] + 1
         print(df)
-        summaryTable.append([state.cycle, state.set_icc, f'{state.set_voltage:.2f}', f'{state.r_on:.2f}', f'{state.r2:.3f}'])
-        prevState = state
-        state = ProcessState(state.cycle + 1, None, None, None, None)
+        summaryTable.append(df.loc[stateIndex])
 
     # add the properties as a bulleted list
     flowables.append(ListFlowable(
@@ -293,7 +259,7 @@ def __getIccRonPlot(tmpDir, df) -> Image:
     fig.patch.set_facecolor('white')
     print(df)
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
-    sns.scatterplot(data=df.loc[df.R_on < 20000, :].loc[df.R2 >= 0.98 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
+    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.9999 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
     plt.ylabel("$R_{on}$ [Ω]")
