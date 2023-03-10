@@ -97,26 +97,42 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
             pages.append(flowable)
         
         # put each operation on its own page
-        if i < len(items) - 1:
-            pages.append(PageBreakIfNotEmpty())
+        #if i < len(items) - 1:
+            #pages.append(PageBreakIfNotEmpty())
     
     setfig = plt.figure(figsize=(10, 4), dpi=300)
-    plt.title('Sets')
-    plt.xlabel("Voltage $V$ [V]")
-    plt.ylabel("Current $I$ [A]")
-    for i, page in enumerate(items):
-        if page.activity == 'set':
-            plt.plot(page.probeA_voltage, page.probeA_current)
-    plt.savefig(f'{tmpDir}/sets.png')
+    ax = setfig.add_subplot(1, 1, 1)
+    ax.set_title('Sets')
+    ax.set_xlabel("Voltage $V$ [V]")
+    ax.set_ylabel("Current $I$ [A]")
+    used_pages = []
+    #technically bad to iterate through rows in a columnar database
+    #as it defeats their purpose, however these are small db and
+    #frankly columnar is overkill for them
+    for (cycle, icc, v, ron, r2, set, reset) in df.itertuples(index=False):
+        if isinstance(set, int):
+            page = items[set]
+            labelString = f'{icc:.1f} μA'
+            if cycle == 1:
+                labelString += ' (form)'
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
+            
+    ax.legend(loc='best')
+    setfig.savefig(f'{tmpDir}/sets.png')
 
     resetfig = plt.figure(figsize=(10, 4), dpi=300)
-    plt.title('Resets')
-    plt.xlabel("Voltage $V$ [V]")
-    plt.ylabel("Current $I$ [A]")
-    for i, page in enumerate(items):
-        if page.activity == 'reset':
-            plt.plot(page.probeA_voltage, page.probeA_current)
-    plt.savefig(f'{tmpDir}/resets.png')
+    ax = resetfig.add_subplot(1, 1, 1)
+    ax.set_title('Resets')
+    ax.set_xlabel("Voltage $V$ [V]")
+    ax.set_ylabel("Current $I$ [A]")
+    for (cycle, icc, v, ron, r2, set, reset) in df.itertuples(index=False):
+        if isinstance(reset, int) and ron < 10000 and r2 > 0.9999:
+            page = items[reset]
+            labelString = f'{icc:.1f} μA'
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
+            #ax.legend(loc='upper left')
+    ax.legend(loc='best')
+    resetfig.savefig(f'{tmpDir}/resets.png')
 
 
     summaryTableFlowable = Table(summaryTable)
@@ -167,7 +183,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
         'Voltage Range': f'{page.startVoltage}  →  {page.endVoltage}',
         'Target Ramp Rate': f'{page.rampRate}',
         'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
-        'Cycle': df.loc[stateIndex, 'Cycle']#state.cycle
+        'Cycle': df.loc[stateIndex, 'Cycle']
     })
     reset_cell = False
     if page.activity == 'reset':
@@ -196,18 +212,23 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
 
     else:
         # successful set/form
-        if ca.calcSetVoltage(page, df_calc):
+        #check to make sure the cell isn't already in set condition
+        #by checking to make sure the set voltage isn't too low as well
+        set_voltage = ca.calcSetVoltage(page, df_calc)
+        if set_voltage is not None and set_voltage > 0.3:
+
             df.loc[stateIndex, 'Set Icc'] = page.complianceCurrent
-            df.loc[stateIndex, 'Set Voltage'] = ca.calcSetVoltage(page, df_calc)
+            df.loc[stateIndex, 'Set Voltage'] = set_voltage
 
             set_voltage = df.loc[stateIndex, 'Set Voltage']
 
             props['Set Voltage'] = f'{set_voltage:.2f} V'
             df.loc[stateIndex, 'Set Data'] = i
 
-        else:
+        elif set_voltage is None:
             props['Error'] = 'Set failed'
-
+        else:
+            props['Error'] = 'Set ran on cell that was already set'
 
     cycle_complete = reset_cell
 
