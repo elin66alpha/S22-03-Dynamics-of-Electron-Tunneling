@@ -59,7 +59,7 @@ def calcSetVoltage(csv_file, df, set_thresh: float=0.9):  #self.df
         raise Exception(f"set_voltage() called on data from {csv_file.activity}")  #{self.activity()}: {self.file}
     
     # get the compliance current from the CSV file name
-    units = {'uA': 1e-6, 'mA': 1e-3}
+    units = {'uA': 1e-6, 'mA': 1e-3, 'A': 1}
     icc = float(csv_file.complianceCurrent) * units.get(csv_file.complianceCurrentUnits, 1)
 
     # we're going to assume that the cell has set after it achieves 90% of Icc
