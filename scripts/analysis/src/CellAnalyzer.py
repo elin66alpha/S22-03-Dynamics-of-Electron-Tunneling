@@ -91,7 +91,7 @@ def calcSetVoltage(csv_file, df, set_thresh: float=0.9):  #self.df
 #               df : dataframe of the calculation
 #               iThresh : resistance threshold for determining threshold
 # Output:		string : 'set', 'reset', or 'unknown' 
-def calcCellState(csv_file, df, iThresh = 1e-6):
+def calcCellState(csv_file, df, iThresh = 1.2e-6):
     i = df['AI'].to_numpy()
     v = df['AV'].to_numpy()
 
@@ -127,36 +127,26 @@ def calcCellState(csv_file, df, iThresh = 1e-6):
 #
 # Input:		None.
 # Output:		The first index of data corresponding to a nonlinear jump, as a __.
-def __linear_idx(df, linear_thresh: float=5e-3):
-    # theory here is that the 2nd derivative of the linear portion of the current data will be 0,
-    # while the sudden nonlinear jumps will have a nonzero 2nd derivative
-    # so this gives us a signal and we compare the jumps against the `linear_thresh` hyperparameter
-    #
-    # Formula comes from https://en.wikipedia.org/wiki/Finite_difference#Higher-order_differences (see second order central derivative formula)
+def __linear_idx(df, linear_thresh: float=15.0):
+    # theory here is that in the linear portion of the IV curve, the resistance
+    # should remain constant, so by thresholding the resistance derivative we
+    # can accurately identify the derivative
 
     i = df['AI'].values
     v = df['AV'].values
 
-    # take the average voltage steps as 'dv' for derivative di/dv
-    dv = np.convolve(v, np.array([-0.5, 0, 0.5]), mode = 'valid')#np.mean(np.diff(v))
-    # use convolution to perform the second order formula, will crop off first and last data element
-    di2 = np.convolve(i, np.array([1, -2, 1]), mode='valid')
+    #resistance is supposed to remain constant until reset, so a large change in that means loss of linearity
+    #the np.maximum is to avoid a divide by 0
+    dr = np.abs(np.convolve(np.abs(v/np.maximum(np.abs(i), 1e-8)), np.array([0.0, -0.5, 0.5]), mode = 'valid'))
 
-    didv2 = di2 / (dv * dv)
-
-    # check for large jumps in 2nd derivative against hyperparameter
-    # giving a binary signal
-    series = np.abs(didv2) >= linear_thresh
-    # take difference of binary signal to find 'crossing points'
-    d = np.diff(series)
-
-    jumps = np.argwhere(d)
+    jumps = np.argwhere(dr[1:] > linear_thresh)
 
     if len(jumps) == 0:
         return None
 
     # first instance of a major jump
-    idx = np.min(jumps) + 1   # add +1 since this index really starts at 1 for the data series due to the mode='valid' in convolution
+    idx = np.min(jumps) + 2   # add +2 since this index really starts at 1 for the data series due to the mode='valid' in convolution, and the first
+    #datapoint being excluded for always being above the threshold
     
     return idx
 
@@ -196,7 +186,7 @@ def calcResistance(csv_file, df):
     if not csv_file.activity == 'reset':
         raise Exception(f"resistance() called on data from {csv_file.activity}")
     
-    idx = __linear_idx(df, linear_thresh=0.001)
+    idx = __linear_idx(df)
     i = df['AI'].values
     v = df['AV'].values
 
@@ -204,12 +194,13 @@ def calcResistance(csv_file, df):
     if idx is not None:
         i, v = i[:idx], v[:idx]
 
+
     if np.any(np.isnan(v[:idx])) or np.any(np.isnan(i[:idx])):
         print("Nan Detected")
 
     # now we will take the data up until idx and perform a linear fit to it to obtain the resistance
     r_on, _, r, _, _ = linregress(i[:idx], v[:idx])
-    r2 = r ** 2    # store R^2 value from linear fit too
+    r2 = r * r   # store R^2 value from linear fit too
 
     return r_on, r2  #add r2 as an output 
 

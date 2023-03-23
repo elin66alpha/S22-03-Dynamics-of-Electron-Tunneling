@@ -115,8 +115,9 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
             if cycle == 1:
                 labelString += ' (form)'
             ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
+            ax.legend(loc='best')
             
-    ax.legend(loc='best')
+    #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
 
     resetfig = plt.figure(figsize=(10, 4), dpi=300)
@@ -125,12 +126,11 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     ax.set_xlabel("Voltage $V$ [V]")
     ax.set_ylabel("Current $I$ [A]")
     for (cycle, icc, v, ron, r2, set, reset) in df.itertuples(index=False):
-        if isinstance(reset, int) and ron < 10000 and r2 > 0.9999:
+        if isinstance(reset, int) and ron < 10000 and r2 > 0.997:
             page = items[reset]
             labelString = f'{icc:.1f} μA'
             ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
-            #ax.legend(loc='upper left')
-    ax.legend(loc='best')
+            ax.legend(loc='best')
     resetfig.savefig(f'{tmpDir}/resets.png')
 
 
@@ -213,7 +213,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
         set_voltage = ca.calcSetVoltage(page, df_calc)
         if set_voltage is not None and set_voltage > 0.3:
 
-            df.loc[stateIndex, 'Set Icc'] = page.complianceCurrent
+            df.loc[stateIndex, 'Set Icc'] = page.complianceCurrent * 1e6
             df.loc[stateIndex, 'Set Voltage'] = set_voltage
 
             set_voltage = df.loc[stateIndex, 'Set Voltage']
@@ -274,7 +274,7 @@ def __getIccRonPlot(tmpDir, df) -> Image:
     fig = plt.figure(dpi=300)
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
-    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.9999 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
+    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
     plt.ylabel("$R_{on}$ [Ω]")
