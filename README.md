@@ -88,7 +88,7 @@ The cell naming convention used.
 
 location(cell<sub>i</sub>) = (w<sub>0</sub>, r<sub>0</sub>, c<sub>0</sub>, r<sub>1</sub>, c<sub>1</sub>, r<sub>2</sub>, c<sub>2</sub>) 
 
-&ensp;&ensp;where w<sub>0</sub> is wafer number or index. 
+&ensp;&ensp;where w<sub>0</sub> is the wafer number or index. 
 
 &ensp;&ensp;where r<sub>0</sub> is the primary row number (the red number in Grid) 
 
