@@ -1,6 +1,7 @@
 # Impact of Thermal Cross-talk on Bit Immunity - Central Repository
 
 Previously named "Dynamics of Electron Tunneling."
+
 Sponsored by Micron Technology, Inc.
 
 ## Project Summary
@@ -66,20 +67,20 @@ gitGraph
 ## Cell Mapping
 
 ### Wafer Mask
-![An illustration of the wafer mask](/project_summary/images/mask.jpg)
+![An illustration of the wafer mask](/images/mask.jpg)
 
 ### Cut Wafer
 During manufacturing, the wafer is cut in half, to focus data collection on the northern (topmost) quadrant of the mask. Thus, our arrays and naming convention only coincide with this portion.
-![An illustration of the cut wafer](/project_summary/images/cutwafer.jpg)
+![An illustration of the cut wafer](/images/cutwafer.jpg)
 
 ### Grid Coordinate System
-![An illustration of the grid coordinate system](/old_guidelines/summary_paper/figures/maskcoord.jpg)
-![An illustration of cell array indexing](/project_summary/images/array_indexing.png)
-![An illustration of cell array](/project_summary/images/cell_array.png)
+![An illustration of the grid coordinate system](/images/maskcoord.jpg)
+![An illustration of cell array indexing](/images/array_indexing.png)
+![An illustration of cell array](/images/cell_array.png)
 
 > Cells are indexed starting from 0, going left to right and down to up. So, from (0, 0) to (4, 4)
 
-![An illustration of cell construction](/project_summary/images/cell_side_view.png)
+![An illustration of cell construction](/images/cell_side_view.png)
 
 > Notice the copper filament through TaOx. This is what "Dynamics of Electron Tunneling" refers to. It is conductive (a short) when the cell is in Set state, and ruptured (a break) when the cell is in Reset state.
 
