@@ -24,7 +24,7 @@ from reportlab.lib import utils
 
 #PUBLIC 
 
-# Name:			.
+# Name:			convert_csv_files
 # Summary:		Convert csv files' data to a datatype. / Create csv files datatype.
 # Desc:			.
 # Refinement:	.

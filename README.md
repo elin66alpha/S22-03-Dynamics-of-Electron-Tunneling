@@ -76,9 +76,7 @@ During manufacturing, the wafer is cut in half, to focus data collection on the 
 ### Grid Coordinate System
 ![An illustration of the grid coordinate system](/images/maskcoord.jpg)
 ![An illustration of cell array indexing](/images/array_indexing.png)
-
-> Cells are indexed starting from 0, going left to right and down to up. So, from (0, 0) to (4, 4)
-
+Cells are indexed starting from 0, going left to right and down to up. So, from (0, 0) to (4, 4)
 ![An illustration of cell array](/images/cell_array.png)
 
 

@@ -19,7 +19,6 @@ Files Structure
 	\resources\ - for resources, such as input and output data
 		analysis_reports\ - output reports generated when code is run, populated automatically
 		processed_data\ - csv files containing processed version of raw measurement data, populated automatically
-	\old_guidelines\ - for previous team's guidelines, temporary aka will delete when not needed anymore
 	\.gitignore - to configure what files git ignores, update to include unnecessary data, as necessary
 	\LICENSE - outdated license outlining repo fair use 
 	\README.md - first repo file immediately visible to public, aka external stakeholders
@@ -55,23 +54,16 @@ Overview
 	   - "Input" must be custom datatype(s).
 	   - Create data analysis reports.
 
-Limitations (Might delete)
-  List any internal restrictions or requirements (regarding the entire repo) here, such as python version compatibilty.
+Limitations
+  <List any internal restrictions or requirements (regarding the entire repo) here, such as python version compatibilty.>
 
 Known Issues
   - in cvsParser.py, on Windows,
 		"file = open(csvPath, 'r')" -> "file = open(csvPath, 'r', encoding = 'utf8')"
 
 Resources
-  - consider not storing resource data on the cloud, as it is unnecessary and clogs up git commits. 
-  - cloud (repo) storage is limited.
-
-
-Script Interaction
-  script files call other script files
-  
-Script 1 (header for each script file to be explained here)
-
+  - Not storing resource data on the cloud, as it is unnecessary and clogs up git commits. 
+  - Cloud (repo) storage is limited.
 
 TEMPLATES
 
@@ -79,8 +71,6 @@ Files
 
 # Name:			.
 # Summary:		.
-#
-# Creator: 		.
 
 Methods, Classes, etc
 
