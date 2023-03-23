@@ -4,9 +4,11 @@
 # must be installed correctly before running
 
 numpy
-pandas 
+matplotlib 
+pandas
 scipy
-matplotlib
+reportlab
 seaborn
 tqdm
+xlrd
 
