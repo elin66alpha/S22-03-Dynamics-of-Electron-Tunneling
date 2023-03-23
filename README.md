@@ -88,19 +88,19 @@ The cell naming convention used.
 
 location(cell<sub>i</sub>) = (d<sub>0</sub>, r<sub>0</sub>, c<sub>0</sub>, r<sub>1</sub>, c<sub>1</sub>, r<sub>2</sub>, c<sub>2</sub>) 
 
-&ensp;where d<sub>0</sub> is device type. 
+&ensp;&ensp;where d<sub>0</sub> is device type. 
 
-&ensp;where r<sub>0</sub> is the primary row number (the red number in Grid) 
+&ensp;&ensp;where r<sub>0</sub> is the primary row number (the red number in Grid) 
 
-&ensp;where c<sub>0</sub> is the primary column number (the green number in Grid) 
+&ensp;&ensp;where c<sub>0</sub> is the primary column number (the green number in Grid) 
 
-&ensp;where r<sub>1</sub> is the secondary row number (the blue number in Grid) 
+&ensp;&ensp;where r<sub>1</sub> is the secondary row number (the blue number in Grid) 
 
-&ensp;where c<sub>1</sub> is the secondary column number (the yellow number in Grid) 
+&ensp;&ensp;where c<sub>1</sub> is the secondary column number (the yellow number in Grid) 
 
-&ensp;where r<sub>2</sub> is the row of the cell in the array defined by (d<sub>0</sub>, r<sub>0</sub>, c<sub>0</sub>, r<sub>1</sub>, c<sub>1</sub>) 
+&ensp;&ensp;where r<sub>2</sub> is the row of the cell in the array defined by (d<sub>0</sub>, r<sub>0</sub>, c<sub>0</sub>, r<sub>1</sub>, c<sub>1</sub>) 
 
-&ensp;where c<sub>2</sub> is the column of the cell in the array defined by (d<sub>0</sub>, r<sub>0</sub>, c<sub>0</sub>, r<sub>1</sub>, c<sub>1</sub>)
+&ensp;&ensp;where c<sub>2</sub> is the column of the cell in the array defined by (d<sub>0</sub>, r<sub>0</sub>, c<sub>0</sub>, r<sub>1</sub>, c<sub>1</sub>)
 
 > For now, secondary cell location will always be (-1, -1), as we are not using those arrays.
 
