@@ -16,7 +16,7 @@ We are continuing a previous team's work; credit goes to them. Among other thing
 </div>
 	
 ### Goal
-To capture (measure) aforementioned unexpected behavior, then explore limits of neighboring cell.
+To capture (measure) aforementioned unexpected behavior, then explore limits of ReRAM cells.
 
 ## Overview
 This repo serves to make data analysis and its interactions efficient. Thus, increasing the efficiency of both data collection and review.
@@ -104,7 +104,7 @@ location(cell<sub>i</sub>) = (w<sub>0</sub>, r<sub>0</sub>, c<sub>0</sub>, r<sub
 
 > For now, secondary cell location will always be (-1, -1), as we are not using those arrays.
 
-### Electron Tunneling
+## Electron Tunneling
 
 ![An illustration of cell construction](/images/cell_side_view.png)
 
