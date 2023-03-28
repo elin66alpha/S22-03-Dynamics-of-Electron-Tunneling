@@ -1,8 +1,5 @@
 # Name:			CellAnalyzer.py
 # Summary:		Methods to extract characteristics from cell IV curves and provides interpretable graphs.
-#   
-# Limitations:  Currently only supports 2-probe measurements.
-# Refinement:	Clean up comments.
 
 #import dependencies  
 import numpy as np
@@ -12,12 +9,9 @@ from functools import cached_property
 
 from src.utils.CsvFile import CsvFile
 
-
-
-# Name:			__init__
-# Summary:		.
-# Desc:			Constructs the R_on data handler
-# Refinement:	.
+# Name:			calcDataFrame
+# Summary:		Constructs the R_on data handler
+# Desc:			Takes the csv file and returns a pandas data frame
 #
 # Input:		csvItem : csvItem
 #                   Item containing metadata of the CSV file
@@ -25,15 +19,7 @@ from src.utils.CsvFile import CsvFile
 #                   Hyperparameter controlling detection of Set/Form voltage. See `set_voltage()` for more info
 #               linear_thresh : float
 #                   Hyperparameter controlling 
-# Output:		.
-
-# Name:			.
-# Summary:		.
-# Desc:			Takes the csv file and returns a pandas data frame
-# Refinement:	.
-#
-# Input:		None.
-# Output:		.
+# Output:		df
 def calcDataFrame(csv_file: CsvFile, set_thresh: float=0.9, linear_thresh: float=5e-3) -> pd.DataFrame:
     df = pd.DataFrame({
         'AI': csv_file.probeA_current,
@@ -43,18 +29,14 @@ def calcDataFrame(csv_file: CsvFile, set_thresh: float=0.9, linear_thresh: float
 
     return df
 
-# Name:			.
-# Summary:		.
-# Desc:			Calculates the set voltage for a set or form CSV file.
-#    
-#               Checks when the current crosses `set_thresh * Icc`. Result is cached after first calculation.
-# Refinement:	.
+# Name:			calcSetVoltage
+# Summary:		Calculates the set voltage for a set or form CSV file.
+# Desc:			Checks when the current crosses `set_thresh * Icc`. Result is cached after first calculation.
 #
-# Input:		None.
 # Output:		voltage : float or None
 #                   Returns voltage of the last crossing instance. Returns `None` if 
 #                   no crossing is found (e.g. non-conductive cell that remains in nano-Ampère range)    
-def calcSetVoltage(csv_file, df, set_thresh: float=0.9):  #self.df
+def calcSetVoltage(csv_file, df, set_thresh: float=0.9):
     if not csv_file.activity in ['set', 'form']:
         raise Exception(f"set_voltage() called on data from {csv_file.activity}")  #{self.activity()}: {self.file}
     
@@ -82,10 +64,7 @@ def calcSetVoltage(csv_file, df, set_thresh: float=0.9):  #self.df
     return voltage
 
 # Name:			calcCellState
-# Summary:		.
-# Desc:			Calculates the state the cell is currently in at end of calculation.
-#    
-# Refinement:	.
+# Summary:		Calculates the state the cell is currently in at end of calculation.
 #
 # Input:		csv_file : csv file object that is used for calculation
 #               df : dataframe of the calculation
@@ -119,14 +98,8 @@ def calcCellState(csv_file, df, iThresh = 1.2e-6):
         return 'reset'"""
 
 
-
-# Name:			.
-# Summary:		.
-# Desc:			.
-# Refinement:	.
-#
-# Input:		None.
-# Output:		The first index of data corresponding to a nonlinear jump, as a __.
+# Name:			linear_idx
+# Output:		The first index of data corresponding to a nonlinear jump.
 def __linear_idx(df, linear_thresh: float=15.0):
     # theory here is that in the linear portion of the IV curve, the resistance
     # should remain constant, so by thresholding the resistance derivative we
@@ -150,14 +123,12 @@ def __linear_idx(df, linear_thresh: float=15.0):
     
     return idx
 
-# Name:			.
-# Summary:		.
+# Name:			linear_voltage_regime
 # Desc:			Returns the region where the algorithm thinks the curve is sufficiently linear
 #    
 #               Only works on reset curves
-# Refinement:	.
 #
-# Input:		.
+# Input:		df
 # Output:		(v_min, v_max) : A tuple consisting of the linear voltage region    
 def linear_voltage_regime(df):
     v = df['AV'].values
@@ -175,9 +146,7 @@ def linear_voltage_regime(df):
 #               Makes use of `linear_thresh` hyperparameter. Value is cached after first call, accessed by property not method.
 #
 #               On resistance is calculated by fitting a line to linear region of IV curve. Then, resistance is 1 / slope of that line.
-# Refinement:	.
 #
-# Input:		.
 # Output:		resistance : float or None
 #                   Detected R_on of the cell, or `None` if the data was too nonlinear
 #               r2 : float
@@ -204,13 +173,8 @@ def calcResistance(csv_file, df):
 
     return r_on, r2  #add r2 as an output 
 
-# Name:			.
-# Summary:		.
-# Desc:			Calculates the true ramp rate of the data in V/s.
-# Refinement:	.
-#
-# Input:		.
-# Output:		.    
+# Name:			calcRampRate
+# Summary:		Calculates the true ramp rate of the data in V/s.  
 def calcRampRate(csv_file, df) -> float:
     if csv_file.activity == 'observe':
         raise Exception(f"ramp_rate() called on data from observe")
@@ -229,15 +193,10 @@ def calcRampRate(csv_file, df) -> float:
 
         return df['AV'][idx] / df['Time'][idx]
 
-# Name:			.
+# Name:			energy_input
 # Summary:		Calculates the amount of energy being input into the system as a cumulative distribution
-#               only works on successful resets at this time, as the voltage at compliance current is not
-#               properly handled yet
-# Desc:			.
-# Refinement:	.
-#
-# Input:		.
-# Output:		.    
+# Desc:			Only works on successful resets at this time, as the voltage at compliance current is not
+#               properly handled yet   
 def energy_input(csv_file, df) -> np.ndarray:
     if not csv_file.activity in ['observe', 'reset']:
         raise Exception(f"energy_input() called on data from not from observe or reset")
@@ -258,13 +217,8 @@ def energy_input(csv_file, df) -> np.ndarray:
     e[len(e) - 1] = e[len(e) - 2]
     return e
 
-# Name:			.
-# Summary:		.
-# Desc:			.
-# Refinement:	.
-#
-# Input:		.
-# Output:		.
+# Name:			plot_energy
+# Output:		outfile
 def plot_energy(csv_file, df, outfile: str):
     
     import matplotlib.pyplot as plt
@@ -280,13 +234,8 @@ def plot_energy(csv_file, df, outfile: str):
     plt.savefig(outfile)
     plt.close()
     
-# Name:			.
-# Summary:		.
+# Name:			plot
 # Desc:			Plots IV-curve annotated with what the algorithm interpreted from the data, and saves in `outfile`
-# Refinement:	.
-#
-# Input:		.
-# Output:		.
 def plot(csv_file, df, outfile: str, set_thresh: float=0.9):
     #import libs
     import matplotlib.pyplot as plt

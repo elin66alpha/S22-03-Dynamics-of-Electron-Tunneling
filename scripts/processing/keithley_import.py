@@ -1,8 +1,9 @@
 # Name:			keithley_import
-# Summary:		.
-# Refinement:   Change wafer ID to only need an integer, and therefore have much higher max. (now only has new wafer and old wafer)
-#               Parse data from raw data, not log file when able.
+# Summary:		Process raw data into CSVs.
+# Desc:         Be wary of excel binary and excel formatting, such as utf8 vs utf16.
+# Refinement:   Parse data from raw data, not log file when able.
 #               Potentially, change date arg to default to "all" so make it optional arg.
+#               Make functions for some code from "sort" for maintainability. 
 
 import os
 import argparse
@@ -11,12 +12,6 @@ import xlrd
 from xml.dom.minidom import Element, parse as parse_xml
 from datetime import datetime
 import pytz
-
-# (wafer2,2,10,-1,-1,2,2)_221108160418_form_0_5_1_35uA
-# wf#, array#, sub#,cell#_time_operation_low_high_rr_icc
-
-#(wafer0,0,6,-1,-1,0,3)_220401120438_form_0_5_1_30uA
-#(wafer1,2,2,-1,-1,2,2)_230206145442_form_0_5_0.025_15 uA
 
 def remove_parenthesis(str):
     new_str = str.replace('(','')
