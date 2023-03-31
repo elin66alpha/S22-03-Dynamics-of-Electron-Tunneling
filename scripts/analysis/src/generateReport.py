@@ -11,6 +11,7 @@ import shutil
 from dataclasses import dataclass
 import pandas
 from typing import Iterable, Dict, List, OrderedDict
+import math
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -105,6 +106,9 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     ax.set_xlabel("Voltage $V$ [V]")
     ax.set_ylabel("Current $I$ [A]")
     used_pages = []
+    setCount = 0
+    setSum = 0
+    setSumSquared = 0
     #technically bad to iterate through rows in a columnar database
     #as it defeats their purpose, however these are small db and
     #frankly columnar is overkill for them
@@ -116,6 +120,14 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
                 labelString += ' (form)'
             ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
             ax.legend(loc='best')
+            if(not math.isnan(v) and v > 0.3):
+                setCount += 1
+                setSum += v
+                setSumSquared += v * v
+
+    mean = setSum / setCount
+    variance = setSumSquared / setCount - (mean * mean)
+    stdDev = math.sqrt(variance)
             
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
@@ -136,6 +148,8 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
 
     summaryTableFlowable = Table(summaryTable)
     flowables.append(summaryTableFlowable)
+    flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean}', styles['BodyText']))
+    flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev}', styles['BodyText']))
     flowables.append(__getIccRonPlot(tmpDir, df))
     flowables.append(__getImage(f'{tmpDir}/sets.png', 600))
     flowables.append(__getImage(f'{tmpDir}/resets.png', 600))
