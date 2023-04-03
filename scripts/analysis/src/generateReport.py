@@ -100,9 +100,10 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         #if i < len(items) - 1:
             #pages.append(PageBreakIfNotEmpty())
     
-    setfig = plt.figure(figsize=(10, 4), dpi=300)
+    setfig = plt.figure(figsize=(12, 6), dpi=300)
+    plt.rcParams.update({'font.size': 15})
     ax = setfig.add_subplot(1, 1, 1)
-    ax.set_title('Sets')
+    ax.set_title('Sets',fontsize = 22)
     ax.set_xlabel("Voltage $V$ [V]")
     ax.set_ylabel("Current $I$ [A]")
     used_pages = []
@@ -118,7 +119,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
             labelString = f'{icc:.1f} μA'
             if cycle == 1:
                 labelString += ' (form)'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
             ax.legend(loc='best')
             if(not math.isnan(v) and v > 0.3):
                 setCount += 1
@@ -132,16 +133,17 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
 
-    resetfig = plt.figure(figsize=(10, 4), dpi=300)
+    resetfig = plt.figure(figsize=(12, 6), dpi=300)
+    plt.rcParams.update({'font.size': 15})
     ax = resetfig.add_subplot(1, 1, 1)
-    ax.set_title('Resets')
+    ax.set_title('Resets',fontsize = 22)
     ax.set_xlabel("Voltage $V$ [V]")
     ax.set_ylabel("Current $I$ [A]")
     for (cycle, icc, v, ron, r2, set, reset) in df.itertuples(index=False):
         if isinstance(reset, int) and ron < 10000 and r2 > 0.997:
             page = items[reset]
             labelString = f'{icc:.1f} μA'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
             ax.legend(loc='best')
     resetfig.savefig(f'{tmpDir}/resets.png')
 
@@ -208,6 +210,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
 
             df.loc[stateIndex, 'R_on'] = resistance
             df.loc[stateIndex, 'R2'] = r2
+
             props['Resistance'] = f'{resistance:.2f} Ω' #f'{state.r_on:.2f} Ω'
             props['Linear Fit R2'] = f'{r2:.3f}'
 
@@ -226,12 +229,12 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
         #by checking to make sure the set voltage isn't too low as well
         set_voltage = ca.calcSetVoltage(page, df_calc)
         if set_voltage is not None and set_voltage > 0.3:
-
+            
             df.loc[stateIndex, 'Set Icc'] = page.complianceCurrent * 1e6
             df.loc[stateIndex, 'Set Voltage'] = set_voltage
 
             set_voltage = df.loc[stateIndex, 'Set Voltage']
-
+            
             props['Set Voltage'] = f'{set_voltage:.2f} V'
             df.loc[stateIndex, 'Set Data'] = i
 
@@ -285,10 +288,11 @@ def __getImage(path, width=1):
 def __getIccRonPlot(tmpDir, df) -> Image:
     path = f"{tmpDir}/r_on_plot.png"
 
-    fig = plt.figure(dpi=300)
+    fig = plt.figure(figsize=(10, 6),dpi=300)
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
-    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
+    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red")
+    sns.lineplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",estimator='max', color='black')
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
     plt.ylabel("$R_{on}$ [Ω]")
