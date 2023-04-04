@@ -55,7 +55,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     
     #generate report 
     
-    tmpDir = f'{pdfFolder}/tmp'
+    tmpDir = f'{pdfFolder}/({cellCoord})-dump'
     os.makedirs(tmpDir)
 
     # setup document
@@ -162,7 +162,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     if len(flowables) > 0:
         doc.build(flowables)
 
-    shutil.rmtree(tmpDir)   
+    #shutil.rmtree(tmpDir)   
 
 # Name:			.
 # Summary:		.
@@ -292,7 +292,7 @@ def __getIccRonPlot(tmpDir, df) -> Image:
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
     sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red")
-    sns.lineplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",estimator='max', color='black')
+    #sns.lineplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",estimator='max', color='black')
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
     plt.ylabel("$R_{on}$ [Ω]")
