@@ -96,13 +96,17 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         # put each operation on its own page
         #if i < len(items) - 1:
             #pages.append(PageBreakIfNotEmpty())
+            
+    defaultFontSize = 15
+    titlePlotFontSize = 22
+    axisLabelFontSize = 18
     
     setfig = plt.figure(figsize=(12, 6), dpi=300)
-    plt.rcParams.update({'font.size': 15})
+    plt.rcParams.update({'font.size': defaultFontSize})
     ax = setfig.add_subplot(1, 1, 1)
-    ax.set_title('Sets',fontsize = 22)
-    ax.set_xlabel("Voltage $V$ [V]")
-    ax.set_ylabel("Current $I$ [A]")
+    ax.set_title('Sets',fontsize = titlePlotFontSize)
+    ax.set_xlabel("Voltage $V$ [V]", fontsize = axisLabelFontSize)
+    ax.set_ylabel("Current $I$ [A]", fontsize = axisLabelFontSize)
     used_pages = []
     setCount = 0
     setSum = 0
@@ -122,20 +126,32 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
                 setCount += 1
                 setSum += v
                 setSumSquared += v * v
-
-    mean = setSum / setCount
-    variance = setSumSquared / setCount - (mean * mean)
-    stdDev = math.sqrt(variance)
-            
+    try:
+        mean = setSum / setCount
+        variance = setSumSquared / setCount - (mean * mean)
+        stdDev = math.sqrt(variance)
+    except:
+        print("\nWARNING: Error during cell summary set mean and standard deviation calculations in generateReport.py.")
+        if (setCount == 0):
+            print("Due to cell having zero valid sets.\n")
+            mean = setSum
+            variance = 0
+            stdDev = 0
+        else:
+            print("")  #endline
+            mean = 0
+            variance = 0
+            stdDev = 0
+        
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
 
     resetfig = plt.figure(figsize=(12, 6), dpi=300)
-    plt.rcParams.update({'font.size': 15})
+    plt.rcParams.update({'font.size': defaultFontSize})
     ax = resetfig.add_subplot(1, 1, 1)
-    ax.set_title('Resets',fontsize = 22)
-    ax.set_xlabel("Voltage $V$ [V]")
-    ax.set_ylabel("Current $I$ [A]")
+    ax.set_title('Resets',fontsize = titlePlotFontSize)
+    ax.set_xlabel("Voltage $V$ [V]", fontsize = axisLabelFontSize)
+    ax.set_ylabel("Current $I$ [A]", fontsize = axisLabelFontSize)
     for (cycle, icc, v, ron, r2, set, reset) in df.itertuples(index=False):
         if isinstance(reset, int) and ron < 10000 and r2 > 0.997:
             page = items[reset]
@@ -159,7 +175,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     if len(flowables) > 0:
         doc.build(flowables)
 
-    #shutil.rmtree(tmpDir)   
+    shutil.rmtree(tmpDir)  #comment this out to keep plot images, useful when need high DPI images of plots. Not stable.  
 
 # Name:			generatePage
 # Summary:		Takes a CSV item and returns a list of flowables.
