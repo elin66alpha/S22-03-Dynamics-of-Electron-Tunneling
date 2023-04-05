@@ -50,9 +50,9 @@ def check_blank_line(line):
     run_num = line[6]
     array_loc = line[3]
     cell_loc = line[4]
-    if(cell_loc == ''):
-        line[4] = line[5]
-        cell_loc = line[4]
+    #if(cell_loc == ''):
+    #    line[4] = line[5]  #not correct, this is taking the second cell location as the first cell location, which is not right.
+    #    cell_loc = line[4]
     if (procedure_type != ''):
         if (array_loc != '' and cell_loc !='' and run_num !=''):
             return True
