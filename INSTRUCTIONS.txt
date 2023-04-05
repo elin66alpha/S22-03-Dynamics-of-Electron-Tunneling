@@ -1,6 +1,6 @@
 # Name:			INSTRUCTIONS.txt
 # Summary:		External use guidelines.
-# Desc:			Contains what anyone needs to know in order to analyse measurement data (use the code).
+# Desc:			Contains what anyone needs to know in order to analyze measurement data (use the code).
 #
 #				WINDOWS VERFIED ONLY.
 #
@@ -9,33 +9,34 @@
 INSTRUCTIONS
 
 Overview 
-  This repo allows you to analyse measurement data. ...
+	Raw lab data, stored in excel binary format, are processed into CSV format. Then, these CSVs are analyzed to plot the data, and PDF reports are generated.
   
-	Limitations
-	  List any external restrictions or requirements here, such as lab equipment or procedure used, or input formatting.
-	  
+Limitations
+	<List any external restrictions or requirements here, such as lab equipment or procedure used, or input formatting.>
+	
+	1. CSVs are not cleared from their \resources\processed_data\ directory. (Analysis generates PDF reports for all CSVs currently in the directory.) You need to manually wipe this as needed.
+
+	2. In fact, Git is configured to ignore \resources\. This means Git will not keep backups of your data, nor overwrite or clear it for you. 
+	
+	3. Regarding lab, a log must be kept when doing the measurements. This maps information not stored in the raw data to information in the raw data, such as cell location(s) and probe setup to run number.	
+		a. Currently, any line in the log file that is invalid, such as having a blank run number, will output an error message then continue processing subsequent data.
+		b. Be sure to follow the appropriate guidelines for populating the log. 
 	  
 Run Code
   
-  1. if not already installed, need to pip install (verify me*)
-	numpy
-	matplotlib 
-	pandas
-	scipy
-	reportlab, https://pypi.org/project/reportlab/
-	seaborn
-	tqdm
-	xlrd
+  1. If not already installed, run: 
+	 `pip install -r requirements.txt`
   
-  2. Copy raw data (follow instructions in /resources/raw_data/README.md)
+  2. Copy raw data, following instructions in /resources/raw_data/README.md
   
   3. From the repo dir, run: (using Windows powershell)
 	`python $pwd/scripts/processing/keithley_import.py <your_log_file_name_without_extension> <date>`
 	
 	a. For <date>, can either write ONE date or `all`. Using one date will only run data in log file from that date.
-	   It also needs to match the string in the log file. ex. 02/11/2023 vs. 2/11/2023 matters.
+	   It also needs to match the string in the log file. 
+	   i.e. 02/11/2023 vs. 2/11/2023 matters.
 
   3. From the repo dir, run: (using Windows powershell)
 	`python $pwd/scripts/analysis/`
 	
-  4. done! report(s) are generated
+  4. Done! Report is generated in /resources/analysis_reports/

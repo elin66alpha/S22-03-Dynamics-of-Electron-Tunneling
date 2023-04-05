@@ -1,5 +1,5 @@
-# Name:			.
-# Summary:		.
+# Name:			CsvFile
+# Summary:		Datatype for a CSV file.
 
 #import dependencies  
 from datetime import datetime
@@ -7,9 +7,7 @@ import typing
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 import src.utils.csvParser as csvParser
-
 
 # Name:			csvItem
 # Summary:		Datatype for a CSV file.
@@ -22,12 +20,11 @@ class CsvFile :
     #PUBLIC
     
     # Name:			__init__
-    # Summary:		.
-    # Desc:			Populate lots of instance variables to hold file data.
+    # Summary:		Populate lots of instance variables to hold file data.
     # Refinement:	Change instance variables to get functions? Do not parse csv file inside init?
     #
     # Input:		A CSV path, including the file name.
-    # Output:		.
+    # Output:		None.
     def __init__(self, csvPath: str) :
 
         # MUST MAINTAIN ORDER BELOW. Variables within this class are order dependent.
@@ -60,19 +57,14 @@ class CsvFile :
         self.endVoltage             = activityParameters['endV']
         self.rampRate               = activityParameters['rampRate'] # in volts per second
         self.complianceCurrent      = activityParameters['complianceCurrent'] 
-        #self.complianceCurrentUnits = activityParameters['complianceCurrentUnits']
         self.complianceCurrentUnits = 'A'
         self.platinumVoltage        = activityParameters['platinumV']
         self.copperVoltage          = activityParameters['copperV']
         self.runFolderName          = activityParameters['runFolderName']
+    
+        self.title, self.comments, self.__columns = csvParser.parseCsv(csvPath)  #the title for each column in the csv, whatever comments were at the top of the file , and the column data.
 
-        #self.__csvParserObject = csvParser(csvPath)
-        #self.comments = self.__csvParserObject.comments   # whatever comments were at the top of the file 
-        #self.title    = self.__csvParserObject.title      # the title for each column in the csv
-        self.title, self.comments, self.__columns = csvParser.parseCsv(csvPath)
-
-        # these contain lists of floats containing each column in the csv for 2-probe measurements probeC will be
-        # unpopulated obviously
+        # these contain lists of floats containing each column in the csv for 2-probe measurements probeC will be unpopulated obviously
         axisObject = self.__getAxis()
         self.timeAxis       = axisObject['timeAxis']
         self.probeA_voltage = axisObject['probeA_voltage']
@@ -82,10 +74,8 @@ class CsvFile :
         self.probeC_voltage = axisObject['probeC_voltage']
         self.probeC_current = axisObject['probeC_current']
 
-
-
-    # Name:			.
-    # Summary:		.
+    # Name:			getPlots
+    # Summary:		Creates data plots.
     # Desc:			Generates matplotlib objects for the csv at and returns a dictionary of matplotlib figure objects with all
     #               csv details plotted. This function is public, because pre-emptively running it in the constructor for many
     #               objects will destroy the host machine's memory -- so call it only when needed.
@@ -214,12 +204,11 @@ class CsvFile :
     
     #PRIVATE
 
-    # Name:			.
-    # Summary:		.
+    # Name:			getCSVfileName
+    # Summary:		Parses the file name from the path.
     # Desc:			gets the name of the file with the rest of the path removed
-    # Refinement:	.
     #
-    # Input:		.
+    # Input:		The path to a file.
     # Output:		str
     #                   name of the file with the rest of the path removed
     def __getCSVfileName(self) -> str :
@@ -234,10 +223,10 @@ class CsvFile :
 
         return fileName
 
-    # Name:			.
-    # Summary:		.
-    # Desc:			three probe when file name's first character is ( AND the first character after the first _ is (
-    # Refinement:	.
+    # Name:			isThreeProbe
+    # Summary:		Finds if data from three-probe or two-probe station setup.
+    # Desc:			Three-probe when file name's first character is ( AND the first character after the first _ is (
+    # Refinement:	The file name, as a string.
     #
     # Input:		The file name, as a string.
     # Output:		bool
@@ -252,8 +241,8 @@ class CsvFile :
 
         return isThreeProbe
 
-    # Name:			.
-    # Summary:		.
+    # Name:			getCellCoord
+    # Summary:		Gets the cell location(s).
     # Desc:			Splits the file name, checks if the file is three probe or not, then extracts the cell coordinates from the file name.
     #               When two probe, there is only one cell to find coordinates for. When three probe, must find the coordinates for the active cell and neighbor cell.
     # Refinement:	Could change input to file name already split, and make a method to do that.
@@ -275,12 +264,10 @@ class CsvFile :
             cellCoords['cell_n'] = '<2 probe measurement, so no neighbor cell>'
             return cellCoords
 
-    # Name:			.
+    # Name:			getTimeStamp
     # Summary:		Returns a dictionary detailing year month day hour minute in string, e.g. 2021 February 23 10.53pm
-    # Desc:			.
-    # Refinement:	.
     #
-    # Input:		.
+    # Input:		The file name, as a string.
     # Output:		typing.Dict
     def __getTimeStamp(self) -> typing.Dict :
         time = {}
@@ -314,27 +301,26 @@ class CsvFile :
 
         return time
 
-    # Name:			.
-    # Summary:		.
-    # Desc:			Gets activity that cell was undergoing. Only valid for 2 probe. Can be form, reset, set, or observe
+    # Name:			getCellActivity
+    # Summary:		Gets activity that cell was undergoing.
+    # Desc:			Only valid for 2 probe. Can be form, reset, set, or observe
     # Refinement:	Could change to return empty string when invalid.
     #
-    # Input:		.
+    # Input:		The file name, as a string.
     # Output:		The activity, as a string.
     def __getCellActivity(self) -> str :
         if self.isThreeProbe :
-            return self.csvFileName.split('_')[3].lower()  #'<csv is 3-probe measurement. No Activity Value>'
+            return self.csvFileName.split('_')[3].lower()
         else :
             return self.csvFileName.split('_')[2].lower()
 
-    # Name:			__getActivityParameters
-    # Summary:		.
+    # Name:			getActivityParameters
     # Desc:			Returns the activity parameters for the cell in the csv depending on which activity it was undergoing and
     #               whether it was 2 probe or 3 probe. So depending, some fields may not be populated. Please see section 2.4 of the
     #               summary document.
-    # Refinement:	.
+    # Refinement:   Could get this information a different way, rather than using the filename, which is not scalable.
     #
-    # Input:		.
+    # Input:		The file name, as a string.
     # Output:		typing.Dict
     #                  _description_
     def __getActivityParameters(self) -> typing.Dict :
@@ -349,7 +335,6 @@ class CsvFile :
             aParams['endV']                   = fileNameSplit[5] + 'V'
             aParams['rampRate']               = fileNameSplit[6] + 'V/s'  #'<3 probe, so invalid>'
             aParams['complianceCurrent']      = float(fileNameSplit[-1])  #'<3 probe, so invalid>'
-            #aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]  #'<3 probe, so invalid>'
             aParams['platinumV']              = '<platinum voltage should be entered in comments>'  #assume terminal B is platinum
             aParams['copperV']                = '<platinum voltage should be entered in comments>'  #assume terminal A is copper
             aParams['runFolderName']          = fileNameSplit[:-4]
@@ -362,7 +347,6 @@ class CsvFile :
                 aParams['endV']                   = fileNameSplit[4] + 'V'
                 aParams['rampRate']               = fileNameSplit[5] + 'V/s'
                 aParams['complianceCurrent']      = float(fileNameSplit[-1])  #use decimal.Decimal(icc) if seeing arithmetic error
-                #aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]
                 aParams['platinumV']              = '<platinum voltage should be entered in comments>'
                 aParams['copperV']                = '<platinum voltage should be entered in comments>'
 
@@ -371,7 +355,6 @@ class CsvFile :
                 aParams['endV']                   = '<2 probe observe activity, so invalid>'
                 aParams['rampRate']               = '<2 probe observe activity, so invalid>'
                 aParams['complianceCurrent']      = float(fileNameSplit[-1])
-                #aParams['complianceCurrentUnits'] = fileNameSplit[-1][-6:-4]
                 aParams['platinumV']              = fileNameSplit[3] + 'V'
                 aParams['copperV']                = fileNameSplit[4] + 'V'
 
@@ -380,17 +363,14 @@ class CsvFile :
                 aParams['endV']                   = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['rampRate']               = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['complianceCurrent']      = f'<{self.activity} is an invalid 2 probe activity parameter>'
-                #aParams['complianceCurrentUnits'] = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['platinumV']              = f'<{self.activity} is an invalid 2 probe activity parameter>'
                 aParams['copperV']                = f'<{self.activity} is an invalid 2 probe activity parameter>'
 
         return aParams
-    #end __getActivityParameters()
 
     # Name:			__getAxis
     # Summary:		.
     # Desc:			Returns each of the axis' as column vectors -- materialized in python as a 1 dimension list of floats.
-    # Refinement:	.
     #
     # Input:		The file data, as a csvParser.
     # Output:		A dictionary containing an entry for every possible data column in the file, typing.Dict
@@ -425,12 +405,9 @@ class CsvFile :
             axisDict['probeC_current'] = '<no C probe current column in CSV>'
 
         return axisDict
-    #end __getAxis()
 
-    # Name:			__getAnalysis
-    # Summary:		.
+    # Name:			getAnalysis
     # Desc:			Returns each of the values calculated by the analysis for the given measurement
-    # Refinement:	.
     #
     # Input:		The file data, as a csvParser.
     # Output:		A dictionary containing an entry for every possible data column in the file, typing.Dict

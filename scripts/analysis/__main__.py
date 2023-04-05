@@ -1,7 +1,6 @@
-# Name:			.
-# Summary:		.
-# Refinement:   Make dirs cmd line arguments?
-#               Argument for selecting three or two probe 
+# Name:			__main__
+# Summary:		Generates the reports for all CSV data in /resources/processed_data/.
+# Refinement:   Make dirs optional cmd line arguments? 
 
 #import dependencies
 from datetime import datetime

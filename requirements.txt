@@ -1,12 +1,9 @@
-# This is the pip requirements file for electron tunneling program.
-#insall those dependencies by entering: 
-#  pip install -r requirements.txt
-# must be installed correctly before running
-
 numpy
-pandas 
+matplotlib 
+pandas
 scipy
-matplotlib
+reportlab
 seaborn
 tqdm
+xlrd
 

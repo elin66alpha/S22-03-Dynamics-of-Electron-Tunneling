@@ -8,10 +8,6 @@
 
 ORGANIZATION
 
-Code Execution Steps
-  1. Process raw measurement data.
-  2. Analyze processed measurement data.
-
 Files Structure
 	\scripts\ - for scripts
 		processing - previously Keithley
@@ -19,12 +15,13 @@ Files Structure
 	\resources\ - for resources, such as input and output data
 		analysis_reports\ - output reports generated when code is run, populated automatically
 		processed_data\ - csv files containing processed version of raw measurement data, populated automatically
-	\old_guidelines\ - for previous team's guidelines, temporary aka will delete when not needed anymore
+	\images\ - store image files used in README
 	\.gitignore - to configure what files git ignores, update to include unnecessary data, as necessary
-	\LICENSE - outdated license outlining repo fair use 
+	\LICENSE - license outlining repo fair use 
 	\README.md - first repo file immediately visible to public, aka external stakeholders
 	\INSTRUCTIONS.txt - contains repo use instructions
 	\internal_guidelines.txt - contains developer guidelines
+	\requirements.txt - list of module dependencies
 
 Datatype Structure
 
@@ -40,38 +37,32 @@ dataBaseCollator (utils/base.py)
 dataBaseCollator calls cellSizeDataBase, even tho that is not a datatype.
 
 [new]
-CsvFile and ProcessState only classes
+CsvFile and ProcessState are classes
 
 
 GUIDELINES
 
 Overview
   Analyzing measurement data is performed as two-step process. 
-
+  
+Code Execution Steps  
   1. Process raw measurement data.
-	   - [NEW] Format raw files as necessary, then convert to a custom datatype(s).
 	   - [OG] Convert raw files to a custom datatype.
   2. Analyze processed measurement data.   
-	   - "Input" must be custom datatype(s).
 	   - Create data analysis reports.
 
-Limitations (Might delete)
-  List any internal restrictions or requirements (regarding the entire repo) here, such as python version compatibilty.
+Limitations
+  <List any internal restrictions or requirements (regarding the entire repo) here, such as python version compatibilty.>
+  
+  Currently using Python 3.10.4. 
 
 Known Issues
   - in cvsParser.py, on Windows,
 		"file = open(csvPath, 'r')" -> "file = open(csvPath, 'r', encoding = 'utf8')"
 
 Resources
-  - consider not storing resource data on the cloud, as it is unnecessary and clogs up git commits. 
-  - cloud (repo) storage is limited.
-
-
-Script Interaction
-  script files call other script files
-  
-Script 1 (header for each script file to be explained here)
-
+  - Not storing resource data on the cloud, as it is unnecessary and clogs up git commits. 
+  - Cloud (repo) storage is limited.
 
 TEMPLATES
 
@@ -79,8 +70,6 @@ Files
 
 # Name:			.
 # Summary:		.
-#
-# Creator: 		.
 
 Methods, Classes, etc
 

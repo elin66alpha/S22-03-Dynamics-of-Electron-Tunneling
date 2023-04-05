@@ -1,8 +1,9 @@
 # Name:			keithley_import
-# Summary:		.
-# Refinement:   Change wafer ID to only need an integer, and therefore have much higher max. (now only has new wafer and old wafer)
-#               Parse data from raw data, not log file when able.
+# Summary:		Process raw data into CSVs.
+# Desc:         Be wary of excel binary and excel formatting, such as utf8 vs utf16.
+# Refinement:   Parse data from raw data, not log file when able.
 #               Potentially, change date arg to default to "all" so make it optional arg.
+#               Make functions for some code from "sort" for maintainability. 
 
 import os
 import argparse
@@ -12,13 +13,7 @@ from xml.dom.minidom import Element, parse as parse_xml
 from datetime import datetime
 import pytz
 
-# (wafer2,2,10,-1,-1,2,2)_221108160418_form_0_5_1_35uA
-# wf#, array#, sub#,cell#_time_operation_low_high_rr_icc
-
-#(wafer0,0,6,-1,-1,0,3)_220401120438_form_0_5_1_30uA
-#(wafer1,2,2,-1,-1,2,2)_230206145442_form_0_5_0.025_15 uA
-
-def position_process(str):
+def remove_parenthesis(str):
     new_str = str.replace('(','')
     new_str = new_str.replace(')','')
     return new_str
@@ -63,7 +58,27 @@ def check_blank_line(line):
             return True
     print(f'ERROR: please check the lab note format, {line} is either invalid or missing parameters')
     return False
+    
+# Input: integers    
+# Output: True when valid location
+def isValidArrayLocation(row, col):
+    isErr = False
+    if (row < 0) or (row > 4):
+        isErr = True
+    elif (col < 0) or (col > 15):
+        isErr = True
+    return not isErr   
 
+# Input: integers    
+# Output: True when valid location
+def isValidCellLocation(row, col):
+    isErr = False
+    if (row < 0) or (row > 4):
+        isErr = True
+    elif (col < 0) or (col > 4):
+        isErr = True
+    return not isErr     
+            
 def check_blank_cell(str):
     changed_str = ''
     if(str == ''):
@@ -86,6 +101,24 @@ def sort(line, date_in, reso_dir):
     
         #parse 
         if date_in == date or date_in == 'all':
+            #parse cell locations, error handling  
+            loc = remove_parenthesis(array_loc).split(',')
+            valid = isValidArrayLocation(int(loc[0]), int(loc[1]))
+            if not valid:
+                print(f'ERROR: Encountered unexpected cell array coordinate {array_loc} in sort. Using placeholder (-1,-1) for CSV.')
+                array_loc = '-1,-1'
+            loc = remove_parenthesis(heat_cell_loc).split(',')
+            valid = isValidCellLocation(int(loc[0]), int(loc[1]))
+            if not valid:
+                print(f'ERROR: Encountered unexpected cell coordinate {heat_cell_loc} in sort. Using placeholder (-1,-1) for CSV.')
+                heat_cell_loc = '-1,-1'
+            if (obs_cell_loc != ''):  #obs cell can be empty and valid
+                loc = remove_parenthesis(obs_cell_loc).split(',')
+                valid = isValidCellLocation(int(loc[0]), int(loc[1]))
+                if not valid:
+                    print(f'ERROR: Encountered unexpected cell coordinate {obs_cell_loc} in sort. Using placeholder (-1,-1) for CSV.')
+                    obs_cell_loc = '-1,-1'
+                
             #parse activity
             activity= ''
             if((procedure_type == 'R') or (procedure_type == 'R - O') or (procedure_type == 'R - H') or (procedure_type == 'RH') or (procedure_type == 'RP')):  #Reset
@@ -107,9 +140,9 @@ def sort(line, date_in, reso_dir):
                 wafer = int(wafer)  #expect integer index 
 
             if(obs_cell_loc):
-                position = f'(wafer{wafer},{position_process(array_loc)},-1,-1,{position_process(heat_cell_loc)})_(wafer{wafer},{position_process(array_loc)},-1,-1,{position_process(obs_cell_loc)})'
+                position = f'(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(heat_cell_loc)})_(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(obs_cell_loc)})'
             else:
-                position = f'(wafer{wafer},{position_process(array_loc)},-1,-1,{position_process(heat_cell_loc)})'
+                position = f'(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(heat_cell_loc)})'
                 
             #parse runs
             icc_A = '?'  #icc for one cell, for terminal A

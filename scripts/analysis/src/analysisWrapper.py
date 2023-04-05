@@ -1,4 +1,4 @@
-# Name:			analysisWrapper.py
+# Name:			analysisWrapper
 # Summary:		Contains functions to analyze data. NOT datatype classes.
 #
 # Refinement:   Potentially move generate reports private methods to generateReport.py or a new file.
@@ -24,10 +24,9 @@ from reportlab.lib import utils
 
 #PUBLIC 
 
-# Name:			.
+# Name:			convert_csv_files
 # Summary:		Convert csv files' data to a datatype. / Create csv files datatype.
-# Desc:			.
-# Refinement:	.
+# Refinement:	Combine with __organizeCSVs.
 #
 # Input:		Path to the processed raw Keithley data CSVs, as a string.
 # Output:		The data, csvData, as an ordered dictionary.
@@ -35,9 +34,7 @@ def convert_csv_files(path):
     return __organizeCSVs(path)  #data for all csv files in path
 
 # Name:			generate_reports
-# Summary:		.
-# Desc:			Generates a report for EVERY CSV file.
-# Refinement:	.
+# Summary:		Generates a PDF report for EVERY cell encountered in CSV files.
 #
 # Input:		The output path to store the generated reports, as a string. 
 #               The data, csvData, as an ordered dictionary.
@@ -54,9 +51,7 @@ def generate_reports(path, csvData):
     # folder.
     for key,value in tqdm(csvData.items()) :  #grab the value, all csvItems for a cell, of each csvData entry
         __pdfGen(value, summaryDict, path)  #combine
-        generateReport.generateReport(value, summaryDict, path)
-#end generate_reports()  
-  
+        generateReport.generateReport(value, summaryDict, path) 
   
   
 #PRIVATE (have not tested to see if using "__name" actually makes it "private" from main script)
@@ -64,15 +59,13 @@ def generate_reports(path, csvData):
 # Name:			__organizeCSVs
 # Summary:		Organizes every CSV file in the given location.
 # Desc:			
-#               Creates a "csvItem" for every file.
+#               Creates a "csvItem" for every cell location encountered.
 #               For every file with a unique cell coordinate (in the file name), add an entry to the result, with the cell coordinate
 #               as its key and the csvItem object representing the file as its value. For every "duplicate" file with the same cell coordinate, 
 #               add its csvItem object to the value of that entry.
 #               Finally, sort the value of each entry (file objects) by time stamp.
 #               
 #               Contains nested method definition.
-#
-# Refinement:	.
 #
 # Input:		Path for CSVs, as a string.
 # Output:		Organized files, as an ordered dictionary, csvData.
@@ -109,15 +102,14 @@ def __organizeCSVs(inputDataPath) -> OrderedDict :
 
     #done
     return cellDataDict
-#end __organizeCSVs()
   
 # Name:			__generateSummaryReport
 # Summary:		Generates a cells used summary report.
-# Desc:			Includes information about the cells accessed, their size, when it was last accessed, and number of times stimulated.
+# Desc:			Creates and populates cellsUsedSummary.txt.
 #
-#               All summary report information stored as a text file and an ordered dictionary.
-#               
-# Refinement:	.
+#               Will include information about the cells accessed, their size, when it was last accessed, and number of times stimulated.
+#               All summary report information stored as a text file and an ordered dictionary.               
+# Refinement:	Improve readability of text file.
 #
 # Input:		CSV cell data, as an ordered dictionary.
 # Output:		The summary report, as an ordered dictionary.     
@@ -125,21 +117,30 @@ def __generateSummaryReport(output_path, csvData) -> dict:
     #init
     summaryReportDict = OrderedDict()  #result
     
-    #
+    #get cell data 
     for key, value in csvData.items() :  #for every entry, not every csv file in path 
         cellSummaryDict = OrderedDict()
-
         firstCSV = value[0]
 
-        cell_t_split = firstCSV.heatedCellCoord.split(',')
+        cell_t_split = firstCSV.heatedCellCoord.split(',')  #ex of entire coord: "wafer1,0,0,-1,-1,0,0"
         arrayCoordinates = f'({cell_t_split[1]},{cell_t_split[2]})'
-
-        cellSummaryDict["cellSize"] = cellSizes[arrayCoordinates]
+        #error handling to continue code execution 
+        r = int(cell_t_split[1])
+        c = int(cell_t_split[2])
+        isErr = False
+        if (r < 0) or (r > 4):
+            isErr = True
+        elif (c < 0) or (c > 15):
+            isErr = True
+        
+        if (isErr):
+            cellSummaryDict["cellSize"] = '(-1,-1)'
+            print(f'ERROR: Encountered unexpected cell array coordinate {arrayCoordinates} in __generateSummaryReport. Using placeholder (-1,-1) for report.')
+        else:
+            cellSummaryDict["cellSize"] = cellSizes[arrayCoordinates]
 
         cellSummaryDict['timesAccessed'] = len(value)
-
         cellSummaryDict['lastAccessed'] = f'{value[-1].timeStamp_year}/{value[-1].timeStamp_month}/{value[-1].timeStamp_day} at {value[-1].timeStamp_time12hr}'
-
         summaryReportDict[key] = cellSummaryDict
 
     outputTextFile = ["Cell Coordinate,Cell Size,no. of times stimulated,last stimulated"]
@@ -153,14 +154,11 @@ def __generateSummaryReport(output_path, csvData) -> dict:
     
     #done
     return summaryReportDict
-#end __generateSummaryReport()
 
-
-#BEGIN pdfgen.py
 # Name:			__pdfgen
-# Summary:		.
-# Desc:			Generates a PDF file with csv data.
-# Refinement:	.
+# Summary:		Generates a PDF file for csv data.
+# Desc:			Create the text and images for the document.
+# Refinement:	Make PDF reports more concise and readable. 
 #
 # Input:		csvItemObjList : typing.List 
 #                   (Note that this list needs to be time ordered and only have cells of one coordinate -- this is all handled by the dataBaseCollator class.)
@@ -248,16 +246,14 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
 #end __pdfGen()
 
 # Name:			__getImage
-# Summary:		.
+# Summary:		Resize an image.
 # Desc:			Makes resizing images to scale easy.
-# Refinement:	.
+# Refinement:	Rename __getImage to be more clear.
 #
-# Input:		.
-# Output:		.  
+# Input:		The path to the image to resize, and the desired width.
+# Output:		An Image object.  
 def __getImage(path, width=1):
     img = utils.ImageReader(path)
     iw, ih = img.getSize()
     aspect = ih / float(iw)
     return Image(path, width=width, height=(width * aspect))
-#end __getImage()
-#END pdfgen.py

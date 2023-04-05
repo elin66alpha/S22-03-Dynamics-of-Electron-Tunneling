@@ -1,5 +1,4 @@
 # Name:			generateReport.py
-# Summary:		.
 # Desc:			Takes in CSV files, analyzes the properties of the cells using the CellAnalyzer, and creates a special pdf report containing that information.
 #   
 # Limitations:  Currently only supports 2-probe measurements.
@@ -24,10 +23,8 @@ import src.CellAnalyzer as ca
 from src.utils.CsvFile import CsvFile
 
             
-# Name:			.
-# Summary:		.
-# Desc:			Generates a PDF file and outputs a pdf in the folder path.
-# Refinement:	.
+# Name:			generateReport
+# Summary:		Generates a PDF file and outputs a pdf in the folder path.
 #
 # Input:		csvItems : List[csvItem] 
 #                   Chronological list of CSV files all belonging to a single cell
@@ -164,17 +161,13 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
 
     #shutil.rmtree(tmpDir)   
 
-# Name:			.
-# Summary:		.
-# Desc:			Takes a CSV item and returns a list of flowables. Does not work on observe.
-# Refinement:	Check if changing states to regular variables is fine
+# Name:			generatePage
+# Summary:		Takes a CSV item and returns a list of flowables.
+# Desc:			Does not work on observe.
 #
-# Input:		
-#               df, summaryTable are modified
+# Input:		df, summaryTable are modified
 # Output:		Flowables and df and summary table   
 def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
-
-
     if len(df.index) == 0:
         df.loc[0, 'Cycle'] = int(1)
 
@@ -265,26 +258,22 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
 
     return flowables
 
-# Name:			.
-# Summary:		.
-# Desc:			Makes resizing images to scale easy.
-# Refinement:	.
+# Name:			getImage
+# Summary:		Resize image to scale.
 #
-# Input:		.
-# Output:		.
+# Input:		path to image, and desired width.
+# Output:		Image as an object.
 def __getImage(path, width=1):
     img = utils.ImageReader(path)
     iw, ih = img.getSize()
     aspect = ih / float(iw)
     return Image(path, width=width, height=(width * aspect))
 
-# Name:			.
-# Summary:		.
-# Desc:			.
-# Refinement:	.
+# Name:			getIccRonPlot
+# Summary:		Generates a PNG image of the desired plot.
 #
-# Input:		.
-# Output:		.  
+# Input:		path, df
+# Output:		Image of plot as an object.  
 def __getIccRonPlot(tmpDir, df) -> Image:
     path = f"{tmpDir}/r_on_plot.png"
 

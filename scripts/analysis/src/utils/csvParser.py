@@ -1,4 +1,4 @@
-# Name:			.
+# Name:			csvParser
 # Summary:		Datatype containing methods to parse a CSV file.
 # Desc:         This file contains functions to extract comments, title row, and columns from each csv, according to the format
 #               established in the project summary document.
@@ -8,14 +8,12 @@ import typing
 
 #PUBLIC
 
-#
 # Name:			parseCsv
 # Summary:		Creates a CSV file object.
 # Desc:			Extracts the file's comments, column titles, and column data. 
 #               
 #               Creates list of lines represented as strings. Each entry is one file line. This is used to populate these
 #               instance variables. The comments, titles, and data respectively are extracted from the file.
-# Refinement:	.
 #
 # Input:		The CSV file path, as a string.
 # Output:		A tuple.
@@ -90,8 +88,6 @@ def __extractComments(lines, lastCommentLineIdx) -> str :
 
 # Name:			__extractColumnTitles
 # Summary:		Search file for column titles.
-# Desc:			.
-# Refinement:	.
 #
 # Input:		None.
 # Output:		The titles, as a list of strings. Each entry is the title of the respective column of the csv.
