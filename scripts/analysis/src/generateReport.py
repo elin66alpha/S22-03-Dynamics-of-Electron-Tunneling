@@ -10,6 +10,7 @@ import shutil
 from dataclasses import dataclass
 import pandas
 from typing import Iterable, Dict, List, OrderedDict
+import math
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -51,7 +52,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     
     #generate report 
     
-    tmpDir = f'{pdfFolder}/tmp'
+    tmpDir = f'{pdfFolder}/({cellCoord})-dump'
     os.makedirs(tmpDir)
 
     # setup document
@@ -95,13 +96,21 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         # put each operation on its own page
         #if i < len(items) - 1:
             #pages.append(PageBreakIfNotEmpty())
+            
+    defaultFontSize = 15
+    titlePlotFontSize = 22
+    axisLabelFontSize = 18
     
-    setfig = plt.figure(figsize=(10, 4), dpi=300)
+    setfig = plt.figure(figsize=(12, 6), dpi=300)
+    plt.rcParams.update({'font.size': defaultFontSize})
     ax = setfig.add_subplot(1, 1, 1)
-    ax.set_title('Sets')
-    ax.set_xlabel("Voltage $V$ [V]")
-    ax.set_ylabel("Current $I$ [A]")
+    ax.set_title('Sets',fontsize = titlePlotFontSize)
+    ax.set_xlabel("Voltage $V$ [V]", fontsize = axisLabelFontSize)
+    ax.set_ylabel("Current $I$ [A]", fontsize = axisLabelFontSize)
     used_pages = []
+    setCount = 0
+    setSum = 0
+    setSumSquared = 0
     #technically bad to iterate through rows in a columnar database
     #as it defeats their purpose, however these are small db and
     #frankly columnar is overkill for them
@@ -111,28 +120,51 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
             labelString = f'{icc:.1f} μA'
             if cycle == 1:
                 labelString += ' (form)'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
             ax.legend(loc='best')
-            
+            if(not math.isnan(v) and v > 0.3):
+                setCount += 1
+                setSum += v
+                setSumSquared += v * v
+    try:
+        mean = setSum / setCount
+        variance = setSumSquared / setCount - (mean * mean)
+        stdDev = math.sqrt(variance)
+    except:
+        print("\nWARNING: Error during cell summary set mean and standard deviation calculations in generateReport.py.")
+        if (setCount == 0):
+            print("Due to cell having zero valid sets.\n")
+            mean = setSum
+            variance = 0
+            stdDev = 0
+        else:
+            print("")  #endline
+            mean = 0
+            variance = 0
+            stdDev = 0
+        
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
 
-    resetfig = plt.figure(figsize=(10, 4), dpi=300)
+    resetfig = plt.figure(figsize=(12, 6), dpi=300)
+    plt.rcParams.update({'font.size': defaultFontSize})
     ax = resetfig.add_subplot(1, 1, 1)
-    ax.set_title('Resets')
-    ax.set_xlabel("Voltage $V$ [V]")
-    ax.set_ylabel("Current $I$ [A]")
+    ax.set_title('Resets',fontsize = titlePlotFontSize)
+    ax.set_xlabel("Voltage $V$ [V]", fontsize = axisLabelFontSize)
+    ax.set_ylabel("Current $I$ [A]", fontsize = axisLabelFontSize)
     for (cycle, icc, v, ron, r2, set, reset) in df.itertuples(index=False):
         if isinstance(reset, int) and ron < 10000 and r2 > 0.997:
             page = items[reset]
             labelString = f'{icc:.1f} μA'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
             ax.legend(loc='best')
     resetfig.savefig(f'{tmpDir}/resets.png')
 
 
     summaryTableFlowable = Table(summaryTable)
     flowables.append(summaryTableFlowable)
+    flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean}', styles['BodyText']))
+    flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev}', styles['BodyText']))
     flowables.append(__getIccRonPlot(tmpDir, df))
     flowables.append(__getImage(f'{tmpDir}/sets.png', 600))
     flowables.append(__getImage(f'{tmpDir}/resets.png', 600))
@@ -143,7 +175,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     if len(flowables) > 0:
         doc.build(flowables)
 
-    shutil.rmtree(tmpDir)   
+    shutil.rmtree(tmpDir)  #comment this out to keep plot images, useful when need high DPI images of plots. Not stable.  
 
 # Name:			generatePage
 # Summary:		Takes a CSV item and returns a list of flowables.
@@ -187,6 +219,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
 
             df.loc[stateIndex, 'R_on'] = resistance
             df.loc[stateIndex, 'R2'] = r2
+
             props['Resistance'] = f'{resistance:.2f} Ω' #f'{state.r_on:.2f} Ω'
             props['Linear Fit R2'] = f'{r2:.3f}'
 
@@ -205,12 +238,12 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
         #by checking to make sure the set voltage isn't too low as well
         set_voltage = ca.calcSetVoltage(page, df_calc)
         if set_voltage is not None and set_voltage > 0.3:
-
+            
             df.loc[stateIndex, 'Set Icc'] = page.complianceCurrent * 1e6
             df.loc[stateIndex, 'Set Voltage'] = set_voltage
 
             set_voltage = df.loc[stateIndex, 'Set Voltage']
-
+            
             props['Set Voltage'] = f'{set_voltage:.2f} V'
             df.loc[stateIndex, 'Set Data'] = i
 
@@ -260,10 +293,11 @@ def __getImage(path, width=1):
 def __getIccRonPlot(tmpDir, df) -> Image:
     path = f"{tmpDir}/r_on_plot.png"
 
-    fig = plt.figure(dpi=300)
+    fig = plt.figure(figsize=(10, 6),dpi=300)
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
-    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on")
+    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red")
+    #sns.lineplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",estimator='max', color='black')
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
     plt.ylabel("$R_{on}$ [Ω]")

@@ -6,4 +6,5 @@ reportlab
 seaborn
 tqdm
 xlrd
+pytz
 

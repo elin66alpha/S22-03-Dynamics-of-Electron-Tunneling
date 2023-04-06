@@ -50,7 +50,9 @@ def check_blank_line(line):
     run_num = line[6]
     array_loc = line[3]
     cell_loc = line[4]
-    
+    #if(cell_loc == ''):
+    #    line[4] = line[5]  #not correct, this is taking the second cell location as the first cell location, which is not right.
+    #    cell_loc = line[4]
     if (procedure_type != ''):
         if (array_loc != '' and cell_loc !='' and run_num !=''):
             return True
@@ -119,9 +121,9 @@ def sort(line, date_in, reso_dir):
                 
             #parse activity
             activity= ''
-            if((procedure_type == 'R') or (procedure_type == 'R - O') or (procedure_type == 'R - H')):  #Reset
+            if((procedure_type == 'R') or (procedure_type == 'R - O') or (procedure_type == 'R - H') or (procedure_type == 'RH') or (procedure_type == 'RP')):  #Reset
                 activity = 'reset'
-            elif((procedure_type == 'S') or (procedure_type == 'S - O') or (procedure_type == 'S - H')):  #Set
+            elif((procedure_type == 'S') or (procedure_type == 'S - O') or (procedure_type == 'S - H')) or (procedure_type == 'SH') or (procedure_type == 'SP'):  #Set
                 activity = 'set'
             elif(procedure_type == 'F'):  #Form
                 activity = 'form'
@@ -153,7 +155,10 @@ def sort(line, date_in, reso_dir):
                 num = str(num).replace(" ", "")  #remove spaces in list
                 
                 #parse excel workbook
-                runDir = f'{reso_dir}raw_data/Run{str(num)}'  
+                runDir = f'{reso_dir}raw_data/'
+                runDir += procedure_type
+                runDir += '/Run'+str(num)
+                print(str(runDir))
                 xlsDir = f'{runDir}/data@1[{str(num)}].xls'  
                 try:
                     book = xlrd.open_workbook(xlsDir)

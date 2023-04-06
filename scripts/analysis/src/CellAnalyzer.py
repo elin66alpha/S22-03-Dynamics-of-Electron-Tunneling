@@ -111,8 +111,9 @@ def __linear_idx(df, linear_thresh: float=15.0):
     #resistance is supposed to remain constant until reset, so a large change in that means loss of linearity
     #the np.maximum is to avoid a divide by 0
     dr = np.abs(np.convolve(np.abs(v/np.maximum(np.abs(i), 1e-8)), np.array([0.0, -0.5, 0.5]), mode = 'valid'))
-
-    jumps = np.argwhere(dr[1:] > linear_thresh)
+    di = np.abs(np.convolve(i, np.array([0.0, -0.5, 0.5]), mode = 'valid'))
+    #checks to make sure current hasn't been saturated
+    jumps = np.concatenate((np.argwhere(dr[1:] > linear_thresh), np.argwhere(di[1:] < 1e-8)))
 
     if len(jumps) == 0:
         return None
