@@ -194,7 +194,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     ]
     props = OrderedDict({
         'Time': page.timeStamp_time12hr,
-        'Icc': f'{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
+        'Icc': f'#{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
         'Voltage Range': f'{page.startVoltage}  →  {page.endVoltage}',
         'Target Ramp Rate': f'{page.rampRate}',
         'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
@@ -247,7 +247,8 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
             props['Error'] = 'Set ran on cell that was already set'
 
     cycle_complete = reset_cell
-
+    temp = df.loc[stateIndex, 'Set Icc']
+    props['Icc'] = f'{temp:.1f}μA'
     if cycle_complete:
         df.loc[len(df.index), 'Cycle'] = df.loc[stateIndex, 'Cycle'] + 1
         summaryTable.append(copy.deepcopy(df.loc[stateIndex]))
