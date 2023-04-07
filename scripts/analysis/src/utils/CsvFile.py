@@ -109,7 +109,7 @@ class CsvFile :
             #time_voltage_plot.tick_params(axis='y', colors="red")
 
             time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
-            time_current_plot.set_ylabel("Heated Cell Current ($A$)", fontsize='small', color="blue")
+            time_current_plot.set_ylabel("Heated Cell Current ($A$)", fontsize='small', color="red")
             #print(time_current_plot.margins())
             #time_current_plot.margins(0.01, 0.01)
             #time_current_plot.use_sticky_edges = False
@@ -117,7 +117,7 @@ class CsvFile :
             #f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
             #g = lambda x,pos : "${}$".format(f._formatSciNotation('%1.10e' % x))
             #time_current_plot.gca().yaxis.set_major_formatter(mticker.FuncFormatter(g))
-            time_current_plot.plot(self.timeAxis, self.probeA_current, color="blue")
+            time_current_plot.plot(self.timeAxis, self.probeA_current, color="red")
             #time_current_plot.xlim(169, 369)
             
             time_current_plot.axis(xmin=169,xmax=369)
@@ -129,15 +129,15 @@ class CsvFile :
             
             
             time_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
-            time_current_plot.tick_params(axis='y', colors="blue")
+            time_current_plot.tick_params(axis='y', colors="red")
             
-            time_current_plotB.set_ylabel("Observed Cell Current ($A$)", fontsize='small', color="red")
+            time_current_plotB.set_ylabel("Observed Cell Current ($A$)", fontsize='small', color="blue")
             time_current_plotB.axis(ymin=-7e-5,ymax=1e-5)
             time_current_plotB.margins(0.01, 0.01)
             time_current_plotB.use_sticky_edges = False
-            time_current_plotB.plot(self.timeAxis, self.probeB_current, color="red")
+            time_current_plotB.plot(self.timeAxis, self.probeB_current, color="blue")
             time_current_plotB.set_yticks(np.linspace(min(self.probeB_current), max(self.probeB_current), 5))
-            time_current_plotB.tick_params(axis='y', colors="red")
+            time_current_plotB.tick_params(axis='y', colors="blue")
             
 
             #voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
