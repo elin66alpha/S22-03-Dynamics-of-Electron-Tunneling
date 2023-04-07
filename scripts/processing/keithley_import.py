@@ -13,14 +13,42 @@ from xml.dom.minidom import Element, parse as parse_xml
 from datetime import datetime
 import pytz
 
+#maps excel cell numbers as per log file formatting standard
+#input: line/row of excel file 
+class LogRow:
+    def __init__(self, line):
+        #mapping
+        self.date = line[0]
+        self.wafer = line[1]
+        self.procedure_type = line[2]
+        self.array_loc = line[3]
+        self.heat_cell_loc = line[4]
+        self.obs_cell_loc = line[5]
+        self.run_num = line[6]
+        self.comment = line[7]
+        
+    def getProcedureActivity(self):
+        activity = ''
+        if((self.procedure_type == 'R') or (self.procedure_type == 'R - O') or (self.procedure_type == 'R - H') or (self.procedure_type == 'RH') or (self.procedure_type == 'RP')):  #Reset
+            activity = 'reset'
+        elif((self.procedure_type == 'S') or (self.procedure_type == 'S - O') or (self.procedure_type == 'S - H')) or (self.procedure_type == 'SH') or (self.procedure_type == 'SP'):  #Set
+            activity = 'set'
+        elif(self.procedure_type == 'F'):  #Form
+            activity = 'form'
+        elif(self.procedure_type == 'VS' or self.procedure_type == 'H'or self.procedure_type == 'C'):  #Observe is Verify_Set, Heating, and Cooling
+            activity = 'observe'
+        else:
+            print("ERROR: Invalid activity value found in log file.")
+        return activity
+
 def remove_parenthesis(str):
     new_str = str.replace('(','')
     new_str = new_str.replace(')','')
     return new_str
 
 def find_min_max(table):
-    avmin = int(min(table.col_values(4 ,start_rowx=1)))
-    avmax = int(max(table.col_values(4,start_rowx=1)))
+    avmin = int(min(table.col_values(4 ,start_rowx=1)))  #verify this only skips header row
+    avmax = int(max(table.col_values(4, start_rowx=1)))
     bvmin = int(min(table.col_values(2 ,start_rowx=1)))
     bvmax = int(max(table.col_values(2 ,start_rowx=1)))
     vmin = min(avmin,bvmin)
@@ -45,16 +73,14 @@ def keithley_time(folder_name):
     return loc
 
 #returns if CSV log file line is valid (True) or not (False)
-def check_blank_line(line):
-    procedure_type = line[2]
-    run_num = line[6]
-    array_loc = line[3]
-    cell_loc = line[4]
+#input: LogRow object
+def check_blank_line(ln):
+    cell_loc = ln.heat_cell_loc
     #if(cell_loc == ''):
-    #    line[4] = line[5]  #not correct, this is taking the second cell location as the first cell location, which is not right.
-    #    cell_loc = line[4]
-    if (procedure_type != ''):
-        if (array_loc != '' and cell_loc !='' and run_num !=''):
+    #    ln.heat_cell_loc = ln.obs_cell_loc  #takes the second cell location as the first cell location.
+    #    cell_loc = ln.heat_cell_loc
+    if (ln.procedure_type != ''):
+        if (ln.array_loc != '' and cell_loc !='' and ln.run_num !=''):
             return True
     print(f'ERROR: please check the lab note format, {line} is either invalid or missing parameters')
     return False
@@ -88,30 +114,24 @@ def check_blank_cell(str):
     return changed_str
         
 def sort(line, date_in, reso_dir):
-    if(check_blank_line(line)):
-        #mapping
-        date = line[0]
-        wafer = line[1]
-        procedure_type = line[2]
-        array_loc = line[3]
-        heat_cell_loc = line[4]
-        obs_cell_loc = line[5]
-        run_num = line[6]
-        comment = line[7]
-    
+    ln = LogRow(line)  #mapping
+    if(check_blank_line(ln)):
         #parse 
-        if date_in == date or date_in == 'all':
-            #parse cell locations, error handling  
+        if date_in == ln.date or date_in == 'all':
+            #parse cell locations, error handling 
+            array_loc = ln.array_loc            
             loc = remove_parenthesis(array_loc).split(',')
             valid = isValidArrayLocation(int(loc[0]), int(loc[1]))
             if not valid:
                 print(f'ERROR: Encountered unexpected cell array coordinate {array_loc} in sort. Using placeholder (-1,-1) for CSV.')
                 array_loc = '-1,-1'
+            heat_cell_loc = ln.heat_cell_loc
             loc = remove_parenthesis(heat_cell_loc).split(',')
             valid = isValidCellLocation(int(loc[0]), int(loc[1]))
             if not valid:
                 print(f'ERROR: Encountered unexpected cell coordinate {heat_cell_loc} in sort. Using placeholder (-1,-1) for CSV.')
                 heat_cell_loc = '-1,-1'
+            obs_cell_loc = ln.obs_cell_loc
             if (obs_cell_loc != ''):  #obs cell can be empty and valid
                 loc = remove_parenthesis(obs_cell_loc).split(',')
                 valid = isValidCellLocation(int(loc[0]), int(loc[1]))
@@ -120,20 +140,10 @@ def sort(line, date_in, reso_dir):
                     obs_cell_loc = '-1,-1'
                 
             #parse activity
-            activity= ''
-            if((procedure_type == 'R') or (procedure_type == 'R - O') or (procedure_type == 'R - H') or (procedure_type == 'RH') or (procedure_type == 'RP')):  #Reset
-                activity = 'reset'
-            elif((procedure_type == 'S') or (procedure_type == 'S - O') or (procedure_type == 'S - H')) or (procedure_type == 'SH') or (procedure_type == 'SP'):  #Set
-                activity = 'set'
-            elif(procedure_type == 'F'):  #Form
-                activity = 'form'
-            elif(procedure_type == 'VS' or procedure_type == 'H'or procedure_type == 'C'):  #Observe is Verify_Set, Heating, and Cooling
-                activity = 'observe'
-            else:
-                print("ERROR: Invalid activity value found in log file.")
+            activity = ln.getProcedureActivity()
 
             #parse cell position
-            wafer = check_blank_cell(wafer)
+            wafer = check_blank_cell(ln.wafer)
             if(wafer == '?'):
                 wafer = '999'  #'?' causes errors in file open for csv! 
             else:
@@ -149,14 +159,14 @@ def sort(line, date_in, reso_dir):
             icc_B = '?'  #icc for second cell
             isThreeProbe = False
             
-            run_num = run_num.split(',')
+            run_num = ln.run_num.split(',')
             
             for num in run_num:
                 num = str(num).replace(" ", "")  #remove spaces in list
                 
                 #parse excel workbook
                 runDir = f'{reso_dir}raw_data/'
-                runDir += procedure_type
+                runDir += ln.procedure_type
                 runDir += '/Run'+str(num)
                 print(str(runDir))
                 xlsDir = f'{runDir}/data@1[{str(num)}].xls'  
@@ -256,7 +266,7 @@ def sort(line, date_in, reso_dir):
                     with open(f'{reso_dir}processed_data/{file_name}.csv', 'w', encoding='utf-8') as f:
                         write = csv.writer(f)
                         write.writerow(['---'])
-                        write.writerow([comment])
+                        write.writerow([ln.comment])
                         write.writerow(['---'])
                         for row_num in range(table.nrows):
                             row_value = table.row_values(row_num)
