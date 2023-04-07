@@ -219,24 +219,27 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
         flowables.append(Paragraph(f"Comments = {csvObj.comments}", 
             styles["BodyText"]))
             
-        DEFAULT_DPI = 300    
+        DEFAULT_DPI = 300   
+        TARGET_INCH_WIDTH = 8
+        #PLOT_WIDTH = 600
+        PLOT_WIDTH = TARGET_INCH_WIDTH * DEFAULT_DPI  #for poster image generation, unstable        
 
         if type(plots['probe A plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigA.jpg'
             plots['probe A plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
-            flowables.append(__getImage(imgDir, 400))
+            flowables.append(__getImage(imgDir, PLOT_WIDTH))
             plt.close(plots['probe A plot']) # do this to save memory
 
         if type(plots['probe B plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigB.jpg'
             plots['probe B plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
-            flowables.append(__getImage(imgDir, 400))
+            flowables.append(__getImage(imgDir, PLOT_WIDTH))
             plt.close(plots['probe B plot']) # do this to save memory
 
         if type(plots['probe C plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigC.jpg'
             plots['probe C plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
-            flowables.append(__getImage(imgDir, 400))
+            flowables.append(__getImage(imgDir, PLOT_WIDTH))
             plt.close(plots['probe C plot']) # do this to save memory
 
         flowables.append(Paragraph(f"-------------------------------------------------", 
@@ -244,7 +247,7 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
 
     doc.build(flowables)
 
-    shutil.rmtree(tempImageDir)
+    #shutil.rmtree(tempImageDir)
 #end __pdfGen()
 
 # Name:			__getImage
@@ -255,6 +258,8 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
 # Input:		The path to the image to resize, and the desired width.
 # Output:		An Image object.  
 def __getImage(path, width=1):
+    print(path)
+    print(width)
     img = utils.ImageReader(path)
     iw, ih = img.getSize()
     aspect = ih / float(iw)
