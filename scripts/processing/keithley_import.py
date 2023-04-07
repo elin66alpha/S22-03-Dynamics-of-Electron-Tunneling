@@ -40,6 +40,9 @@ class LogRow:
         else:
             print("ERROR: Invalid activity value found in log file.")
         return activity
+   
+    #when a 2-terminal operation, but on probed/observed cell, not heated cell
+    #def onlyProbedCell(self):
 
 def remove_parenthesis(str):
     new_str = str.replace('(','')
@@ -75,14 +78,16 @@ def keithley_time(folder_name):
 #returns if CSV log file line is valid (True) or not (False)
 #input: LogRow object
 def check_blank_line(ln):
-    cell_loc = ln.heat_cell_loc
+    # begin started to implement support for log file having 1st cell location always as heated, and 2nd cell location always as observed  
+    #cell_loc = ln.heat_cell_loc
     #if(cell_loc == ''):
     #    ln.heat_cell_loc = ln.obs_cell_loc  #takes the second cell location as the first cell location.
     #    cell_loc = ln.heat_cell_loc
+    # end started to implement...
+    
     if (ln.procedure_type != ''):
-        if (ln.array_loc != '' and cell_loc !='' and ln.run_num !=''):
+        if (ln.array_loc != '' and ln.heat_cell_loc !='' and ln.run_num !=''):
             return True
-    print(f'ERROR: please check the lab note format, {line} is either invalid or missing parameters')
     return False
     
 # Input: integers    
@@ -115,7 +120,10 @@ def check_blank_cell(str):
         
 def sort(line, date_in, reso_dir):
     ln = LogRow(line)  #mapping
-    if(check_blank_line(ln)):
+    lnValid = check_blank_line(ln)
+    if (not lnValid):
+        print(f'ERROR: please check the lab note format, {line} is either invalid or missing parameters')
+    else:
         #parse 
         if date_in == ln.date or date_in == 'all':
             #parse cell locations, error handling 
