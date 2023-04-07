@@ -93,7 +93,8 @@ class CsvFile :
         if AProbeExists :
             A_probe_plots        = plt.figure() 
             A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
-            A_probe_plots.suptitle('Probe A plots', fontsize=16)
+            #A_probe_plots.suptitle('Probe A plots', fontsize=16)
+            A_probe_plots.suptitle('Observe', fontsize=16)  #temp
 
             time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
             time_current_plot    = time_voltage_plot.twinx()
@@ -129,7 +130,8 @@ class CsvFile :
         if BProbeExists :
             B_probe_plots        = plt.figure() 
             B_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
-            B_probe_plots.suptitle('Probe B plots', fontsize=16)
+            #B_probe_plots.suptitle('Probe B plots', fontsize=16)
+            A_probe_plots.suptitle('Observe', fontsize=16)  #temp
 
             time_voltage_plot    = B_probe_plots.add_subplot(2, 1, 1)
             time_current_plot    = time_voltage_plot.twinx()

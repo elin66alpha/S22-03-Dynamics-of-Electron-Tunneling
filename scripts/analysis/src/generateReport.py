@@ -22,6 +22,15 @@ from reportlab.lib import utils
 import src.CellAnalyzer as ca
 from src.utils.CsvFile import CsvFile
 
+defaultFontSize = 15
+titlePlotFontSize = 22
+axisLabelFontSize = 18
+LINE_WIDTH = 3  #pixel thickness
+
+TARGET_INCH_WIDTH = 4
+DEFAULT_DPI = 300  #dots per inch
+PLOT_WIDTH = 600
+#PLOT_WIDTH = TARGET_INCH_WIDTH * DEFAULT_DPI  #for poster image generation, unstable
             
 # Name:			generateReport
 # Summary:		Generates a PDF file and outputs a pdf in the folder path.
@@ -96,12 +105,8 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         # put each operation on its own page
         #if i < len(items) - 1:
             #pages.append(PageBreakIfNotEmpty())
-            
-    defaultFontSize = 15
-    titlePlotFontSize = 22
-    axisLabelFontSize = 18
     
-    setfig = plt.figure(figsize=(12, 6), dpi=300)
+    setfig = plt.figure(figsize=(12, 6), dpi=DEFAULT_DPI)
     plt.rcParams.update({'font.size': defaultFontSize})
     ax = setfig.add_subplot(1, 1, 1)
     ax.set_title('Sets',fontsize = titlePlotFontSize)
@@ -120,7 +125,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
             labelString = f'{icc:.1f} μA'
             if cycle == 1:
                 labelString += ' (form)'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString, linewidth = LINE_WIDTH)
             ax.legend(loc='best')
             if(not math.isnan(v) and v > 0.3):
                 setCount += 1
@@ -146,7 +151,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
 
-    resetfig = plt.figure(figsize=(12, 6), dpi=300)
+    resetfig = plt.figure(figsize=(12, 6), dpi=DEFAULT_DPI)
     plt.rcParams.update({'font.size': defaultFontSize})
     ax = resetfig.add_subplot(1, 1, 1)
     ax.set_title('Resets',fontsize = titlePlotFontSize)
@@ -156,7 +161,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         if isinstance(reset, int) and ron < 10000 and r2 > 0.997:
             page = items[reset]
             labelString = f'{icc:.1f} μA'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString, linewidth = LINE_WIDTH)
             ax.legend(loc='best')
     resetfig.savefig(f'{tmpDir}/resets.png')
 
@@ -166,8 +171,8 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean}', styles['BodyText']))
     flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev}', styles['BodyText']))
     flowables.append(__getIccRonPlot(tmpDir, df))
-    flowables.append(__getImage(f'{tmpDir}/sets.png', 600))
-    flowables.append(__getImage(f'{tmpDir}/resets.png', 600))
+    flowables.append(__getImage(f'{tmpDir}/sets.png', PLOT_WIDTH))
+    flowables.append(__getImage(f'{tmpDir}/resets.png', PLOT_WIDTH))
     flowables.append(PageBreakIfNotEmpty())
 
     flowables += pages
@@ -230,7 +235,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
             df.loc[stateIndex, 'Reset Data'] = i
         #test code not to be merged
         ca.plot_energy(page, df_calc, f'{tmpDir}/ca_plot_energy{i}.png')
-        flowables.append(__getImage(f'{tmpDir}/ca_plot_energy{i}.png', width=400))
+        flowables.append(__getImage(f'{tmpDir}/ca_plot_energy{i}.png', width=PLOT_WIDTH))
 
     else:
         # successful set/form
@@ -270,7 +275,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     # generate the plot
     plotName = f'{tmpDir}/ca_plot_{i}.png'
     ca.plot(page, df_calc, plotName)
-    flowables.append(__getImage(plotName, width=400))
+    flowables.append(__getImage(plotName, width=PLOT_WIDTH))
 
     return flowables
 
@@ -293,7 +298,7 @@ def __getImage(path, width=1):
 def __getIccRonPlot(tmpDir, df) -> Image:
     path = f"{tmpDir}/r_on_plot.png"
 
-    fig = plt.figure(figsize=(10, 6),dpi=300)
+    fig = plt.figure(figsize=(10, 6),dpi=DEFAULT_DPI)
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
     sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red")
@@ -304,4 +309,4 @@ def __getIccRonPlot(tmpDir, df) -> Image:
     plt.savefig(path)
     plt.close()
 
-    return __getImage(path, width=400)
+    return __getImage(path, width=PLOT_WIDTH)

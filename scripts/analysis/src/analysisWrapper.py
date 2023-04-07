@@ -218,22 +218,24 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
             styles["BodyText"]))
         flowables.append(Paragraph(f"Comments = {csvObj.comments}", 
             styles["BodyText"]))
+            
+        DEFAULT_DPI = 300    
 
         if type(plots['probe A plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigA.jpg'
-            plots['probe A plot'].savefig(imgDir,bbox_inches='tight',dpi=100)
+            plots['probe A plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
             flowables.append(__getImage(imgDir, 400))
             plt.close(plots['probe A plot']) # do this to save memory
 
         if type(plots['probe B plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigB.jpg'
-            plots['probe B plot'].savefig(imgDir,bbox_inches='tight',dpi=100)
+            plots['probe B plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
             flowables.append(__getImage(imgDir, 400))
             plt.close(plots['probe B plot']) # do this to save memory
 
         if type(plots['probe C plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigC.jpg'
-            plots['probe C plot'].savefig(imgDir,bbox_inches='tight',dpi=100)
+            plots['probe C plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
             flowables.append(__getImage(imgDir, 400))
             plt.close(plots['probe C plot']) # do this to save memory
 
