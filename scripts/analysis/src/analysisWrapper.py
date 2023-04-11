@@ -187,7 +187,7 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
 
     # add summary details
     temp = cellCoord.split(',')
-    flowables.append(Paragraph(f"- Wafer ID = {temp[0]}", styles["BodyText"]))
+    flowables.append(Paragraph(f"- Wafer ID = {temp[0][-1]}", styles["BodyText"]))
     flowables.append(Paragraph(f"- Location = ({temp[1]}, {temp[2]})", styles["BodyText"]))
     flowables.append(Paragraph(f"- Array Location = ({temp[5]}, {temp[6]})", styles["BodyText"]))
     flowables.append(Paragraph(f"- Cell Size = {cellSummaryDict['cellSize']} (not verified)", styles["BodyText"]))
