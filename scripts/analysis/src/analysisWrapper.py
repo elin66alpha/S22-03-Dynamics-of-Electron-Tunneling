@@ -18,7 +18,7 @@ import src.generateReport as generateReport
 from matplotlib.pyplot import savefig
 
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import utils
 
@@ -186,24 +186,28 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
     flowables.append(Paragraph('('+cellCoord+') Plots and Summary', styles["Heading1"]))
 
     # add summary details
-    flowables.append(Paragraph(f"- Cell Size = {cellSummaryDict['cellSize']}", styles["BodyText"]))
+    temp = cellCoord.split(',')
+    flowables.append(Paragraph(f"- Wafer ID = {temp[0]}", styles["BodyText"]))
+    flowables.append(Paragraph(f"- Location = ({temp[1]}, {temp[2]})", styles["BodyText"]))
+    flowables.append(Paragraph(f"- Array Location = ({temp[5]}, {temp[6]})", styles["BodyText"]))
+    flowables.append(Paragraph(f"- Cell Size = {cellSummaryDict['cellSize']} (not verified)", styles["BodyText"]))
     flowables.append(Paragraph(f"- Number of Times Accessed = {cellSummaryDict['timesAccessed']}", 
         styles["BodyText"]))
     flowables.append(Paragraph(f"- Last Stimulated = {cellSummaryDict['lastAccessed']}", styles["BodyText"]))
-    flowables.append(Paragraph(f"-------------------------------------------------", styles["BodyText"]))
 
     # add sections with plots for each csv
     tempImageDir = pdfDumpPath+f'tempImgs/'
     os.makedirs(tempImageDir)
     for i, csvObj in enumerate(csvItemObjList) :
         plots = csvObj.getPlots()
-
+        
+        flowables.append(Paragraph(f"-------------------------------------------------", styles["BodyText"]))
         flowables.append(Paragraph(f"Stimulated at {csvObj.timeStamp_time12hr} on {csvObj.timeStamp_year}/{csvObj.timeStamp_month}/{csvObj.timeStamp_day} ", styles["BodyText"]))
         if csvObj.isThreeProbe:    
             flowables.append(Paragraph("Three-probe terminal setup.", styles["BodyText"])) 
         else:    
             flowables.append(Paragraph("Two-probe terminal setup.", styles["BodyText"]))    
-        flowables.append(Paragraph(f"Activity = {csvObj.activity}", styles["BodyText"]))
+        flowables.append(Paragraph(f"Activity (reset, set, form, or observe) = {csvObj.activity}", styles["BodyText"]))
         if csvObj.activity == 'observe':
             flowables.append(Paragraph("No ramp rate in sampling mode.", styles["BodyText"]))
         else:
@@ -216,6 +220,7 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
             flowables.append(Paragraph(f"Copper Voltage = {csvObj.copperVoltage}", styles["BodyText"]))
         flowables.append(Paragraph(f"Run Folder Name = {csvObj.runFolderName}", styles["BodyText"]))
         flowables.append(Paragraph(f"Comments = {csvObj.comments}", styles["BodyText"]))
+        flowables.append(Paragraph("\n", styles["BodyText"]))
         
         #for poster image generation        
         #DEFAULT_DPI = 800  
@@ -229,21 +234,23 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
             plots['probe A plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
             flowables.append(__getImage(imgDir, PLOT_WIDTH))
             plt.close(plots['probe A plot']) # do this to save memory
+            flowables.append(Paragraph("\n", styles["BodyText"]))
 
         if type(plots['probe B plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigB.jpg'
             plots['probe B plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
             flowables.append(__getImage(imgDir, PLOT_WIDTH))
             plt.close(plots['probe B plot']) # do this to save memory
+            flowables.append(Paragraph("\n", styles["BodyText"]))
 
         if type(plots['probe C plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigC.jpg'
             plots['probe C plot'].savefig(imgDir,bbox_inches='tight',dpi=DEFAULT_DPI)
             flowables.append(__getImage(imgDir, PLOT_WIDTH))
             plt.close(plots['probe C plot']) # do this to save memory
+            flowables.append(Paragraph("\n", styles["BodyText"]))
 
-        flowables.append(Paragraph(f"-------------------------------------------------", 
-            styles["BodyText"]))
+        flowables.append(PageBreak())
 
     doc.build(flowables)
 

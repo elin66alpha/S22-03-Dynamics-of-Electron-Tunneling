@@ -103,13 +103,7 @@ class CsvFile :
                 time_current_plot.set_ylabel("Probe A Current ($A$)", fontsize='small', color="red")
                 #time_current_plot.set_ylabel("Heated Cell Current ($A$)", fontsize='small', color="red")
                 
-                #try to dynamically set axis bounds
-                #
-                #time_current_plot.use_sticky_edges = False
-                #y = self.probeA_current*1e-3
-                #f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
-                #g = lambda x,pos : "${}$".format(f._formatSciNotation('%1.10e' % x))
-                #time_current_plot.gca().yaxis.set_major_formatter(mticker.FuncFormatter(g))
+                #dynamically set axis bounds
                 #
                 #count = 0
                 #newTimeAxis = []
@@ -122,12 +116,6 @@ class CsvFile :
                 #        newprobeA_current.append(self.probeA_current[count])
                 #        newprobeB_current.append(self.probeB_current[count])
                 #    count += 1
-                #print(count)
-                #
-                #xys is a list of (x, y) tuples
-                #time_current_plot.axes.update_datalim(xys)
-                #time_current_plot.set_aspect('equal', adjustable='box')
-                #time_current_plotB.set_aspect('equal', adjustable='box')
                 
                 time_current_plot.plot(self.timeAxis, self.probeA_current, color="red")
                 #time_current_plot.axis(xmin=169,xmax=369)  #zoom in 
@@ -201,7 +189,7 @@ class CsvFile :
             CProbeExists = (type(self.probeC_voltage) != str)
             if AProbeExists :
                 A_probe_plots        = plt.figure() 
-                A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+                A_probe_plots.subplots_adjust(wspace=0, hspace=1)
                 A_probe_plots.suptitle('Probe A plots', fontsize=16)
 
                 time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
@@ -239,7 +227,7 @@ class CsvFile :
 
             if BProbeExists :
                 B_probe_plots        = plt.figure() 
-                B_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+                B_probe_plots.subplots_adjust(wspace=0, hspace=1)
                 B_probe_plots.suptitle('Probe B plots', fontsize=16)
 
                 time_voltage_plot    = B_probe_plots.add_subplot(2, 1, 1)

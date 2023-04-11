@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, PageBreakIfNotEmpty, Table, ListFlowable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, PageBreakIfNotEmpty, Table, ListFlowable, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import utils
 
@@ -133,22 +133,15 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
                 setCount += 1
                 setSum += v
                 setSumSquared += v * v
-    try:
+    if (setCount == 0):
+        print("\nMESSAGE: Due to cell having zero valid sets, expect its summary set data in Characteristics to be empty.\n")
+        mean = setSum
+        variance = 0
+        stdDev = 0
+    else:
         mean = setSum / setCount
         variance = setSumSquared / setCount - (mean * mean)
         stdDev = math.sqrt(variance)
-    except:
-        print("\nWARNING: Error during cell summary set mean and standard deviation calculations in generateReport.py.")
-        if (setCount == 0):
-            print("Due to cell having zero valid sets.\n")
-            mean = setSum
-            variance = 0
-            stdDev = 0
-        else:
-            print("")  #endline
-            mean = 0
-            variance = 0
-            stdDev = 0
         
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
@@ -173,6 +166,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
     flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean}', styles['BodyText']))
     flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev}', styles['BodyText']))
     flowables.append(__getIccRonPlot(tmpDir, df))
+    flowables.append(PageBreak())
     flowables.append(__getImage(f'{tmpDir}/sets.png', PLOT_WIDTH))
     flowables.append(__getImage(f'{tmpDir}/resets.png', PLOT_WIDTH))
     flowables.append(PageBreakIfNotEmpty())
@@ -207,7 +201,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     ]
     props = OrderedDict({
         'Time': page.timeStamp_time12hr,
-        'Icc': f'{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
+        'Icc': f'{page.complianceCurrent:.1e}{page.complianceCurrentUnits}',
         'Voltage Range': f'{page.startVoltage}  →  {page.endVoltage}',
         'Target Ramp Rate': f'{page.rampRate}',
         'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
