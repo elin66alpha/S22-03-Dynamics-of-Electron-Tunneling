@@ -198,26 +198,24 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
     for i, csvObj in enumerate(csvItemObjList) :
         plots = csvObj.getPlots()
 
-        flowables.append(Paragraph(f"Stimulated at {csvObj.timeStamp_time12hr} on {csvObj.timeStamp_year}/{csvObj.timeStamp_month}/{csvObj.timeStamp_day} ", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Activity = {csvObj.activity}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Start Voltage = {csvObj.startVoltage}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"End Voltage = {csvObj.endVoltage}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Ramp Rate = {csvObj.rampRate}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Compliance Current = {csvObj.complianceCurrent}{csvObj.complianceCurrentUnits}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Platinum Voltage = {csvObj.platinumVoltage}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Copper Voltage = {csvObj.copperVoltage}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Run Folder Name = {csvObj.runFolderName}", 
-            styles["BodyText"]))
-        flowables.append(Paragraph(f"Comments = {csvObj.comments}", 
-            styles["BodyText"]))
+        flowables.append(Paragraph(f"Stimulated at {csvObj.timeStamp_time12hr} on {csvObj.timeStamp_year}/{csvObj.timeStamp_month}/{csvObj.timeStamp_day} ", styles["BodyText"]))
+        if csvObj.isThreeProbe:    
+            flowables.append(Paragraph("Three-probe terminal setup.", styles["BodyText"])) 
+        else:    
+            flowables.append(Paragraph("Two-probe terminal setup.", styles["BodyText"]))    
+        flowables.append(Paragraph(f"Activity = {csvObj.activity}", styles["BodyText"]))
+        if csvObj.activity == 'observe':
+            flowables.append(Paragraph("No ramp rate in sampling mode.", styles["BodyText"]))
+        else:
+            flowables.append(Paragraph(f"Ramp Rate = {csvObj.rampRate}", styles["BodyText"]))
+            flowables.append(Paragraph(f"Start Voltage = {csvObj.startVoltage}", styles["BodyText"]))
+            flowables.append(Paragraph(f"End Voltage = {csvObj.endVoltage}", styles["BodyText"]))
+        flowables.append(Paragraph(f"Terminal A Compliance Current = {csvObj.complianceCurrent}{csvObj.complianceCurrentUnits}", styles["BodyText"]))
+        if (not csvObj.isThreeProbe) and csvObj.activity == 'observe':  #only valid case rn 
+            flowables.append(Paragraph(f"Platinum Voltage = {csvObj.platinumVoltage}", styles["BodyText"]))
+            flowables.append(Paragraph(f"Copper Voltage = {csvObj.copperVoltage}", styles["BodyText"]))
+        flowables.append(Paragraph(f"Run Folder Name = {csvObj.runFolderName}", styles["BodyText"]))
+        flowables.append(Paragraph(f"Comments = {csvObj.comments}", styles["BodyText"]))
         
         #for poster image generation        
         #DEFAULT_DPI = 800  
