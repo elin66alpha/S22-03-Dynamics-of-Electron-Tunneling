@@ -27,10 +27,12 @@ titlePlotFontSize = 22
 axisLabelFontSize = 18
 LINE_WIDTH = 3  #pixel thickness
 
-TARGET_INCH_WIDTH = 4
-DEFAULT_DPI = 300  #dots per inch
-PLOT_WIDTH = 600
-#PLOT_WIDTH = TARGET_INCH_WIDTH * DEFAULT_DPI  #for poster image generation, unstable
+#for poster image generation        
+#DEFAULT_DPI = 800  
+#PLOT_WIDTH = 600 
+#memory saver
+DEFAULT_DPI = 300  
+PLOT_WIDTH = 400
             
 # Name:			generateReport
 # Summary:		Generates a PDF file and outputs a pdf in the folder path.
@@ -301,7 +303,7 @@ def __getIccRonPlot(tmpDir, df) -> Image:
     fig = plt.figure(figsize=(10, 6),dpi=DEFAULT_DPI)
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
-    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red")
+    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red", edgewidth = 3)
     #sns.lineplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",estimator='max', color='black')
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")

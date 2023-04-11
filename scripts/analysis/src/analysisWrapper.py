@@ -218,11 +218,13 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
             styles["BodyText"]))
         flowables.append(Paragraph(f"Comments = {csvObj.comments}", 
             styles["BodyText"]))
-            
-        DEFAULT_DPI = 300   
-        TARGET_INCH_WIDTH = 8
-        #PLOT_WIDTH = 600
-        PLOT_WIDTH = TARGET_INCH_WIDTH * DEFAULT_DPI  #for poster image generation, unstable        
+        
+        #for poster image generation        
+        #DEFAULT_DPI = 800  
+        #PLOT_WIDTH = 600 
+        #memory saver
+        DEFAULT_DPI = 300  
+        PLOT_WIDTH = 400
 
         if type(plots['probe A plot']) != str :
             imgDir = tempImageDir+f'{i}_tempFigA.jpg'
@@ -247,7 +249,7 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
 
     doc.build(flowables)
 
-    #shutil.rmtree(tempImageDir)
+    shutil.rmtree(tempImageDir)
 #end __pdfGen()
 
 # Name:			__getImage
@@ -258,8 +260,6 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
 # Input:		The path to the image to resize, and the desired width.
 # Output:		An Image object.  
 def __getImage(path, width=1):
-    print(path)
-    print(width)
     img = utils.ImageReader(path)
     iw, ih = img.getSize()
     aspect = ih / float(iw)

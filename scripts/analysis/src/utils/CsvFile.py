@@ -89,142 +89,186 @@ class CsvFile :
         AProbeExists = (type(self.probeA_voltage) != str)
         BProbeExists = (type(self.probeB_voltage) != str)
         CProbeExists = (type(self.probeC_voltage) != str)
-
-        A_probe_plots        = plt.figure()
-        A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
-        A_probe_plots.suptitle('Observe', fontsize=16)
-        #time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
-        #time_current_plot    = time_voltage_plot.twinx()
-        #voltage_current_plot = A_probe_plots.add_subplot(2, 1, 2)
-        time_current_plot    = A_probe_plots.add_subplot(2, 1, 1)
-        time_current_plotB    = time_current_plot.twinx()
-
-        if AProbeExists :
-            #time_voltage_plot.set_xlabel("Time (seconds)", fontsize='small')
-            #time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
-            #time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
-            #time_voltage_plot.plot(self.timeAxis, self.probeA_voltage, color='red')  #
-            #time_voltage_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
-            #time_voltage_plot.set_yticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
-            #time_voltage_plot.tick_params(axis='y', colors="red")
-
-            time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
-            time_current_plot.set_ylabel("Heated Cell Current ($A$)", fontsize='small', color="red")
-            #print(time_current_plot.margins())
-            #time_current_plot.margins(0.01, 0.01)
-            #time_current_plot.use_sticky_edges = False
-            #y = self.probeA_current*1e-3
-            #f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
-            #g = lambda x,pos : "${}$".format(f._formatSciNotation('%1.10e' % x))
-            #time_current_plot.gca().yaxis.set_major_formatter(mticker.FuncFormatter(g))
-            time_current_plot.plot(self.timeAxis, self.probeA_current, color="red")
-            #time_current_plot.xlim(169, 369)
-            
-            time_current_plot.axis(xmin=169,xmax=369)
-            #print(time_current_plot.margins())
-            # time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
-            # time_current_plot.set_xticks(np.arange(0, 1000, 100))
-            maxTime = max(int(self.timeAxis[-1])+1, 1)
-            time_current_plot.set_xticks(np.arange(169, int(maxTime), (maxTime)//7))
-            
-            
-            time_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
-            time_current_plot.tick_params(axis='y', colors="red")
-            
-            time_current_plotB.set_ylabel("Observed Cell Current ($A$)", fontsize='small', color="blue")
-            time_current_plotB.axis(ymin=-7e-5,ymax=1e-5)
-            time_current_plotB.margins(0.01, 0.01)
-            time_current_plotB.use_sticky_edges = False
-            time_current_plotB.plot(self.timeAxis, self.probeB_current, color="blue")
-            time_current_plotB.set_yticks(np.linspace(min(self.probeB_current), max(self.probeB_current), 5))
-            time_current_plotB.tick_params(axis='y', colors="blue")
-            
-
-            #voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
-            #voltage_current_plot.set_ylabel("Current ($A$)", fontsize='small')
-            #voltage_current_plot.set_title('Current against Voltage', fontsize='small', weight = 'bold')
-            #voltage_current_plot.plot(self.probeA_voltage, self.probeA_current)
-            #voltage_current_plot.set_xticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
-            #voltage_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
-
-            plots['probe A plot'] = A_probe_plots
-
-        else :
-            plots['probe A plot'] = '<does not exist>'
-
-        if BProbeExists :
-            #B_probe_plots        = plt.figure() 
-           # A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
-            #B_probe_plots.suptitle('Probe B plots', fontsize=16)
-            #B_probe_plots.suptitle('Observe', fontsize=16)  #temp
-
-            #time_voltage_plot    = B_probe_plots.add_subplot(2, 1, 1)
-            #time_current_plot    = time_voltage_plot.twinx()
-            #voltage_current_plot = B_probe_plots.add_subplot(2, 1, 2)
-
-            #time_voltage_plot.set_xlabel("Time (seconds)", fontsize='small')
-            #time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
-            #time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
-            # time_voltage_plot.plot(self.timeAxis, self.probeB_voltage, color='red')
-            #time_voltage_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
-            #time_voltage_plot.set_yticks(np.linspace(min(self.probeB_voltage), max(self.probeB_voltage), 5))
-            #time_voltage_plot.tick_params(axis='y', colors="red")
-
-            #time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
-            #time_current_plot.set_ylabel("Current ($A$)", fontsize='small', color="blue")
-            #time_current_plot.plot(self.timeAxis, self.probeB_current, color="red")
-            #time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
-            #time_current_plot.set_yticks(np.linspace(min(self.probeB_current), max(self.probeB_current), 5))
-            #time_current_plot.tick_params(axis='y', colors="blue")
-
-            #voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
-            #voltage_current_plot.set_ylabel("Current ($A$)", fontsize='small')
-            #voltage_current_plot.set_title('Current against Voltage', fontsize='small', weight = 'bold')
-            # voltage_current_plot.plot(self.probeB_voltage, self.probeB_current)
-            #voltage_current_plot.set_xticks(np.linspace(min(self.probeB_voltage), max(self.probeB_voltage), 5))
-            #voltage_current_plot.set_yticks(np.linspace(min(self.probeB_current), max(self.probeB_current), 5))
-
-            #plots['probe B plot'] = B_probe_plots
-            plots['probe B plot'] = '<does not exist>'
-            
-        else :
-            plots['probe B plot'] = '<does not exist>'
-
         
-        if CProbeExists :
-            A_probe_plots        = plt.figure() 
+        #when three-probe observe run, plot probe a and probe b data on one graph
+        if (self.isThreeProbe and self.activity == 'observe'):
+            A_probe_plots        = plt.figure()
             A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
-            A_probe_plots.suptitle('Probe B plots', fontsize=16)
+            A_probe_plots.suptitle('Observe', fontsize=16)
+            time_current_plot    = A_probe_plots.add_subplot(2, 1, 1)
+            time_current_plotB   = time_current_plot.twinx()
 
-            time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
-            time_current_plot    = time_voltage_plot.twinx()
-            voltage_current_plot = A_probe_plots.add_subplot(2, 1, 2)
+            if AProbeExists :
+                time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
+                time_current_plot.set_ylabel("Heated Cell Current ($A$)", fontsize='small', color="red")
+                #time_current_plot.use_sticky_edges = False
+                #y = self.probeA_current*1e-3
+                #f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
+                #g = lambda x,pos : "${}$".format(f._formatSciNotation('%1.10e' % x))
+                #time_current_plot.gca().yaxis.set_major_formatter(mticker.FuncFormatter(g))
+                
+                #count = 0
+                #newTimeAxis = []
+                #newprobeA_current = []
+                #newprobeB_current = []
+                #start = 1500
+                #for t in self.timeAxis:
+                #    if (count > start) and (count < start+2048):  #2048
+                #        newTimeAxis.append(self.timeAxis[count])
+                #        newprobeA_current.append(self.probeA_current[count])
+                #        newprobeB_current.append(self.probeB_current[count])
+                #    count += 1
+                #print(count)
+                
+                time_current_plot.plot(self.timeAxis, self.probeA_current, color="red")
+                #time_current_plot.xlim(169, 369)
+                
+                time_current_plot.axis(xmin=169,xmax=369)
+                #print(time_current_plot.margins())
+                # time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+                # time_current_plot.set_xticks(np.arange(0, 1000, 100))
+                
+                maxTime = max(int(self.timeAxis[-1])+1, 1)
+                time_current_plot.set_xticks(np.arange(169, int(maxTime), (maxTime)//7))
+                
+                
+                time_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
+                time_current_plot.tick_params(axis='y', colors="red")
+                
+                time_current_plotB.set_ylabel("Observed Cell Current ($A$)", fontsize='small', color="blue")
+                time_current_plotB.axis(ymin=-7e-5,ymax=1e-5)
+                time_current_plotB.margins(0.01, 0.01)
+                time_current_plotB.use_sticky_edges = False
+                
+                time_current_plotB.plot(self.timeAxis, self.probeB_current, color="blue")
+                time_current_plotB.set_yticks(np.linspace(min(self.probeB_current), max(self.probeB_current), 5))
+                time_current_plotB.tick_params(axis='y', colors="blue")
+                
+                #xys is a list of (x, y) tuples
+                #time_current_plot.axes.update_datalim(xys)
+                #time_current_plot.set_aspect('equal', adjustable='box')
+                #time_current_plotB.set_aspect('equal', adjustable='box')
 
-            time_voltage_plot.set_xlabel("Time (seconds)", fontsize='small')
-            time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
-            time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
-            time_voltage_plot.plot(self.timeAxis, self.probeC_voltage, color='red')
-            time_voltage_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
-            time_voltage_plot.set_yticks(np.linspace(min(self.probeC_voltage), max(self.probeC_voltage), 5))
-            time_voltage_plot.tick_params(axis='y', colors="red")
+                plots['probe A plot'] = A_probe_plots
 
-            time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
-            time_current_plot.set_ylabel("Current ($A$)", fontsize='small', color="blue")
-            time_current_plot.plot(self.timeAxis, self.probeC_current, color="blue")
-            time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
-            time_current_plot.set_yticks(np.linspace(min(self.probeC_current), max(self.probeC_current), 5))
-            time_current_plot.tick_params(axis='y', colors="blue")
+            else :
+                plots['probe A plot'] = '<does not exist>'
 
-            voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
-            voltage_current_plot.set_ylabel("Current ($A$)", fontsize='small')
-            voltage_current_plot.set_title('Current against Voltage', fontsize='small', weight = 'bold')
-            voltage_current_plot.plot(self.probeC_voltage, self.probeC_current)
-            voltage_current_plot.set_xticks(np.linspace(min(self.probeC_voltage), max(self.probeC_voltage), 5))
-            voltage_current_plot.set_yticks(np.linspace(min(self.probeC_current), max(self.probeC_current), 5))
+            plots['probe B plot'] = '<does not exist>'
+            
+            if CProbeExists :
+                A_probe_plots        = plt.figure() 
+                A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+                A_probe_plots.suptitle('Probe B plots', fontsize=16)
 
-            plots['probe B plot'] = A_probe_plots
+                time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
+                time_current_plot    = time_voltage_plot.twinx()
+                voltage_current_plot = A_probe_plots.add_subplot(2, 1, 2)
 
-        else :
+                time_voltage_plot.set_xlabel("Time (seconds)", fontsize='small')
+                time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
+                time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
+                time_voltage_plot.plot(self.timeAxis, self.probeC_voltage, color='red')
+                time_voltage_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+                time_voltage_plot.set_yticks(np.linspace(min(self.probeC_voltage), max(self.probeC_voltage), 5))
+                time_voltage_plot.tick_params(axis='y', colors="red")
+
+                time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
+                time_current_plot.set_ylabel("Current ($A$)", fontsize='small', color="blue")
+                time_current_plot.plot(self.timeAxis, self.probeC_current, color="blue")
+                time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+                time_current_plot.set_yticks(np.linspace(min(self.probeC_current), max(self.probeC_current), 5))
+                time_current_plot.tick_params(axis='y', colors="blue")
+
+                voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
+                voltage_current_plot.set_ylabel("Current ($A$)", fontsize='small')
+                voltage_current_plot.set_title('Current against Voltage', fontsize='small', weight = 'bold')
+                voltage_current_plot.plot(self.probeC_voltage, self.probeC_current)
+                voltage_current_plot.set_xticks(np.linspace(min(self.probeC_voltage), max(self.probeC_voltage), 5))
+                voltage_current_plot.set_yticks(np.linspace(min(self.probeC_current), max(self.probeC_current), 5))
+
+                plots['probe B plot'] = A_probe_plots
+
+            else :
+                plots['probe C plot'] = '<does not exist>'
+            
+        #when two-probe run or a three-probe set/reset run, plot probe a and probe b data seperately
+        else:    
+            AProbeExists = (type(self.probeA_voltage) != str)
+            BProbeExists = (type(self.probeB_voltage) != str)
+            CProbeExists = (type(self.probeC_voltage) != str)
+            if AProbeExists :
+                A_probe_plots        = plt.figure() 
+                A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+                A_probe_plots.suptitle('Probe A plots', fontsize=16)
+
+                time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
+                time_current_plot    = time_voltage_plot.twinx()
+                voltage_current_plot = A_probe_plots.add_subplot(2, 1, 2)
+
+                time_voltage_plot.set_xlabel("Time (seconds)", fontsize='small')
+                time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
+                time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
+                time_voltage_plot.plot(self.timeAxis, self.probeA_voltage, color='red')
+                time_voltage_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+                time_voltage_plot.set_yticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
+                time_voltage_plot.tick_params(axis='y', colors="red")
+
+                time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
+                time_current_plot.set_ylabel("Current ($A$)", fontsize='small', color="blue")
+                time_current_plot.plot(self.timeAxis, self.probeA_current, color="blue")
+                time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+                time_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
+                time_current_plot.tick_params(axis='y', colors="blue")
+
+                voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
+                voltage_current_plot.set_ylabel("Current ($A$)", fontsize='small')
+                voltage_current_plot.set_title('Current against Voltage', fontsize='small', weight = 'bold')
+                voltage_current_plot.plot(self.probeA_voltage, self.probeA_current)
+                voltage_current_plot.set_xticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
+                voltage_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
+
+                plots['probe A plot'] = A_probe_plots
+
+            else :
+                plots['probe A plot'] = '<does not exist>'
+
+            if BProbeExists :
+                B_probe_plots        = plt.figure() 
+                B_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+                B_probe_plots.suptitle('Probe B plots', fontsize=16)
+
+                time_voltage_plot    = B_probe_plots.add_subplot(2, 1, 1)
+                time_current_plot    = time_voltage_plot.twinx()
+                voltage_current_plot = B_probe_plots.add_subplot(2, 1, 2)
+
+                time_voltage_plot.set_xlabel("Time (seconds)", fontsize='small')
+                time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
+                time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
+                time_voltage_plot.plot(self.timeAxis, self.probeB_voltage, color='red')
+                time_voltage_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+                time_voltage_plot.set_yticks(np.linspace(min(self.probeB_voltage), max(self.probeB_voltage), 5))
+                time_voltage_plot.tick_params(axis='y', colors="red")
+
+                time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
+                time_current_plot.set_ylabel("Current ($A$)", fontsize='small', color="blue")
+                time_current_plot.plot(self.timeAxis, self.probeB_current, color="blue")
+                time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+                time_current_plot.set_yticks(np.linspace(min(self.probeB_current), max(self.probeB_current), 5))
+                time_current_plot.tick_params(axis='y', colors="blue")
+
+                voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
+                voltage_current_plot.set_ylabel("Current ($A$)", fontsize='small')
+                voltage_current_plot.set_title('Current against Voltage', fontsize='small', weight = 'bold')
+                voltage_current_plot.plot(self.probeB_voltage, self.probeB_current)
+                voltage_current_plot.set_xticks(np.linspace(min(self.probeB_voltage), max(self.probeB_voltage), 5))
+                voltage_current_plot.set_yticks(np.linspace(min(self.probeB_current), max(self.probeB_current), 5))
+
+                plots['probe B plot'] = B_probe_plots
+                
+            else :
+                plots['probe B plot'] = '<does not exist>'
+            
             plots['probe C plot'] = '<does not exist>'
 
         return plots
