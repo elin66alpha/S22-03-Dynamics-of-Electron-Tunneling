@@ -10,10 +10,12 @@ Into this (top) directory...
 2. Move your raw data
 
 > Your raw data folders are named `TestName_ClariusProjectName`.
-> You need to rename each folder to the `Op Code` corresponding to its `Test Name`, referring to the aforementioned legend.
-> Ex. Cooling_Doet -> C
 
-> If a Clarius project is created or modified, therefore requiring an updated legend, this software may not perform as expected. As, every change to the Clarius projects has to be supported. 
+> You need to rename each folder to the `Op Code` corresponding to its `Test Name`, referring to the aforementioned legend.
+
+> Ex. `Cooling_Doet -> C`
+
+> If a Clarius project is created or modified, therefore requiring an updated legend, this software may not perform as expected. As, support has to be added. 
 
 example directory: 
 
