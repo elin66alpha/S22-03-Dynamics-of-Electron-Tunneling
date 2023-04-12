@@ -93,7 +93,7 @@ class CsvFile :
         #when three-probe observe run, plot probe a and probe b data on one graph
         if (self.isThreeProbe and self.activity == 'observe'):
             A_probe_plots        = plt.figure()
-            A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+            A_probe_plots.subplots_adjust(wspace=0, hspace=1)
             A_probe_plots.suptitle('Observe', fontsize=16)
             time_current_plot    = A_probe_plots.add_subplot(2, 1, 1)
             time_current_plotB   = time_current_plot.twinx()
@@ -146,7 +146,7 @@ class CsvFile :
             
             if CProbeExists :
                 A_probe_plots        = plt.figure() 
-                A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+                A_probe_plots.subplots_adjust(wspace=0, hspace=1)
                 A_probe_plots.suptitle('Probe B plots', fontsize=16)
 
                 time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
@@ -219,6 +219,16 @@ class CsvFile :
                 voltage_current_plot.plot(self.probeA_voltage, self.probeA_current)
                 voltage_current_plot.set_xticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
                 voltage_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
+                
+                #annotate plot for presentation
+                #set
+                #time_voltage_plot.axhline(y = 6.45, color = 'gray', linestyle = '--', label="Vset")
+                #time_voltage_plot.legend(bbox_to_anchor=(0.01, 1.25), loc='upper left', borderaxespad=0)
+                #time_voltage_plot.annotate('(6.45, 1.5)', xy=(11.55, 6.4), xytext=(8.5, 3), arrowprops=dict(facecolor='black', width=1, headwidth=6))
+                #reset
+                #time_voltage_plot.axhline(y = -1.58, color = 'gray', linestyle = '--', label="Vreset")
+                #time_voltage_plot.legend(bbox_to_anchor=(0.01, 1.25), loc='upper left', borderaxespad=0)
+                #time_voltage_plot.annotate('(6.45, 1.5)', xy=(9.7, 6.4), xytext=(6, -0.4), arrowprops=dict(facecolor='black', width=1, headwidth=6))
 
                 plots['probe A plot'] = A_probe_plots
 
