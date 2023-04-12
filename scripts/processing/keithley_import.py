@@ -176,8 +176,8 @@ def sort(line, date_in, reso_dir):
                 position = f'(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(heat_cell_loc)})'
                 
             #parse runs
-            icc_A = '?'  #icc for one cell, for terminal A
-            icc_B = '?'  #icc for second cell
+            icc_A = ''  #icc for one cell, for terminal A
+            icc_B = ''  #icc for second cell
             isThreeProbe = False
             
             run_num = ln.run_num.split(',')
@@ -189,7 +189,7 @@ def sort(line, date_in, reso_dir):
                 runDir = f'{reso_dir}raw_data/'
                 runDir += ln.procedure_type
                 runDir += '/Run'+str(num)
-                print(str(runDir))
+                #print(str(runDir))
                 xlsDir = f'{runDir}/data@1[{str(num)}].xls'  
                 try:
                     book = xlrd.open_workbook(xlsDir)
@@ -205,8 +205,10 @@ def sort(line, date_in, reso_dir):
                         # Sweeping - variable voltage, so ramp rate/step size valid
                     rr = ''
                     mode = settings.cell_value(2,1)  #B3
+                    rr_invalid = False
                     icc_row = -1
                     if (mode == "Sampling"):  #Step row does not exist!
+                        rr_invalid = True
                         rr = '0'  #step size is zero
                         icc_row = 18
                     elif (mode == "Sweeping"):
@@ -227,6 +229,7 @@ def sort(line, date_in, reso_dir):
                                     rr = B20
                     
                     #parse icc
+                    device_terminal_row = 12
                     if (numRows > 22):
                         nameExists = False  
                         iccExists = False
@@ -238,7 +241,7 @@ def sort(line, date_in, reso_dir):
                             
                         if (numCols > 3):  #3 probe
                             isThreeProbe = True
-                            if (settings.cell_value(icc_row,0) == "Compliance"):  #A19
+                            if (settings.cell_value(icc_row,0) == "Compliance"):
                                 #differenciate icc for the 2 cells 
                                 col_AV = -1
                                 col_BV = -1
@@ -260,26 +263,51 @@ def sort(line, date_in, reso_dir):
                             else:
                                 print(f'ERROR: Could not find Compliance in data@1[{str(num)}].xls.')
    
-                        elif (numCols > 2):  #2 probe
-                            if (settings.cell_value(icc_row,0) == "Compliance"):  #A22
-                                #terminal A and B will have same compliance
-                                icc_A = settings.cell_value(icc_row,1)  #B19, in amps, ex. 6e-05, ex. 0.003
-                                icc_B = icc_A
+                        elif (numCols > 2):  #2 probe means 1 cell so only looking for 1, any, Icc
+                            if (settings.cell_value(icc_row,0) == "Compliance"):
+                                #ID columns for terminal A, B, and C
+                                col_icc = -1
+                                B13 = settings.cell_value(device_terminal_row,1)
+                                C13 = settings.cell_value(device_terminal_row,2)
+                                candidates = [B13, C13]
+                                col_idx = 1
+                                for value in candidates:
+                                    if not (value == "C"):  #assume C is ground aka GNDU
+                                        if (value == "A") or (value == "B"):
+                                            col_icc = col_idx
+                                    #iterate
+                                    col_idx += 1
+                                #done
+                                icc_A = settings.cell_value(icc_row,col_icc)  #in amps, ex. 6e-05, ex. 0.003
+                                icc_B = settings.cell_value(icc_row,col_icc)
                             else:
                                 print (f'{settings.cell_value(icc_row,0)}')
                                 print(f'ERROR: Could not find Compliance in data@1[{str(num)}].xls.')
                         else:
                             print(f'ERROR: Unexpected data in data@1[{str(num)}].xls.')
-                    #convert icc
-                    icc_A = float(icc_A)  #use decimal.Decimal(icc) if seeing arithmetic error
-                    icc_B = float(icc_B)  #use decimal.Decimal(icc) if seeing arithmetic error
                     
+                    #convert icc
+                    if (icc_A == "N/A"):
+                        icc_A = 0
+                        print(f'WARNING: Grabbed N/A as terminal A Icc for data@1[{str(num)}].xls.')
+                    else:
+                        icc_A = float(icc_A)  #use decimal.Decimal(icc) if seeing arithmetic error
+                    if (icc_B == "N/A"):
+                        icc_B = 0
+                        print(f'WARNING: Grabbed N/A as terminal B Icc for data@1[{str(num)}].xls.')
+                    else:
+                        icc_B = float(icc_B)  #use decimal.Decimal(icc) if seeing arithmetic error
+
                     #parse time
                     time = keithley_time(runDir)
                     time = time.strftime(r'%y%m%d%H%M%S')
-
-                    #parse vmin, vmax
-                    vmin, vmax = find_min_max(table)
+                    
+                    #parse vmin, vmax,, only valid when rr valid 
+                    if (rr_invalid):
+                        vmin = 0
+                        vmax = 0
+                    else:
+                        vmin, vmax = find_min_max(table)
                     
                     #create/overwrite to csv file
                     icc = icc_A  #WARNING: only sending icc for ONE cell
@@ -292,7 +320,7 @@ def sort(line, date_in, reso_dir):
                         for row_num in range(table.nrows):
                             row_value = table.row_values(row_num)
                             write.writerow(row_value)
-                    print(f'MESSAGE: {file_name} is generated successfully. Ignore the warning.')
+                    print(f'MESSAGE: {file_name} is generated successfully. Ignore the warning.\n')
                 except:
                     print(f'ERROR: Error during CSV file generation for data@1[{str(num)}].xls.')
  
