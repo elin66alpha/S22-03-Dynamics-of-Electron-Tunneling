@@ -1,0 +1,14 @@
+Date,"Wafer (Index, ex. 0)",Procedure Type,"Array Location (ex. (0,0))",Cell Location (Heat cell when 3-probe),Cell Location (Observe cell when 3-probe),"Run Number (ex. 1,2,3 ex. 1, 2, 3)",Comments,Legend,,
+,,,,,,,,Test Name,Operation,Op Code
+,,,,,,,,3terminal-generic,,
+,,,,,,,,Set_heated_cell,Set,SH
+,,,,,,,,Reset_heated_cell,Reset,RH
+,,,,,,,,Set_probed_cell,Set,SP
+,,,,,,,,Reset_probed_cell,Reset,RP
+,,,,,,,,Heating,Observe,H
+,,,,,,,,Cooling,Observe,C
+,,,,,,,,2terminal-generic,,
+,,,,,,,,VerifySet_1,Observe,VS
+,,,,,,,,Set,Set,S
+,,,,,,,,Reset,Reset,R
+,,,,,,,,Form,Form,F
