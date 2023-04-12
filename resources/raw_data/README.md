@@ -1,4 +1,4 @@
-## Summary
+## Overview
 
 Input raw data files go here.
 
@@ -7,19 +7,19 @@ Input raw data files go here.
 ## Instructions
 
 Into this (top) directory...
-1. Move your log file. (must be .csv)
+1. Move your log file (must be .csv). If necessary, convert it.
 
 > Notice the example log file's legend. 
 
 2. Move your raw data.
 
-> Keithley machine raw data folders are named: `TestName_ClariusProjectName`.
+> On the Keithley machine, raw data folders are named: `TestName_ClariusProjectName`.
 
 3. Rename each folder to the `Op Code` corresponding to its `Test Name`, referring to the aforementioned legend.
 
 > Ex. `Cooling_Doet -> C`
 
-> Note: If a Clarius project is created or modified, therefore requiring an updated legend, this software may not perform as expected. As, support has to be added. 
+> Note: If a Clarius project is created or modified, therefore requiring an updated legend, this software may not perform as expected. As, support has to be added for the modification. 
 
 ## Example Directory
 
