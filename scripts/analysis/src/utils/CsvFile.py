@@ -98,7 +98,7 @@ class CsvFile :
             time_current_plot    = A_probe_plots.add_subplot(2, 1, 1)
             time_current_plotB   = time_current_plot.twinx()
 
-            if AProbeExists :
+            if AProbeExists and BProbeExists:
                 time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
                 time_current_plot.set_ylabel("Probe A Current ($A$)", fontsize='small', color="red")
                 #time_current_plot.set_ylabel("Heated Cell Current ($A$)", fontsize='small', color="red")
@@ -177,7 +177,7 @@ class CsvFile :
                 voltage_current_plot.set_xticks(np.linspace(min(self.probeC_voltage), max(self.probeC_voltage), 5))
                 voltage_current_plot.set_yticks(np.linspace(min(self.probeC_current), max(self.probeC_current), 5))
 
-                plots['probe B plot'] = A_probe_plots
+                plots['probe C plot'] = A_probe_plots
 
             else :
                 plots['probe C plot'] = '<does not exist>'

@@ -80,10 +80,11 @@ def keithley_time(folder_name):
     tz = pytz.timezone('US/Eastern')
     loc = d.astimezone(tz)
 
-    return loc
+    return loc    
 
 #does not contain thorough validity checking
 #contains error handling 
+#Refinement: move to class method
 #returns if CSV log file line is valid (True) or not (False)
 #input: LogRow object
 def check_blank_line(ln):
@@ -169,7 +170,7 @@ def sort(line, date_in, reso_dir):
                 wafer = '999'  #'?' causes errors in file open for csv! 
             else:
                 wafer = int(wafer)  #expect integer index 
-
+            #assume 3-probe/terminal when log file has both cell locations populated (when log file is correct)
             if(obs_cell_loc):
                 position = f'(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(heat_cell_loc)})_(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(obs_cell_loc)})'
             else:
@@ -189,7 +190,7 @@ def sort(line, date_in, reso_dir):
                 runDir = f'{reso_dir}raw_data/'
                 runDir += ln.procedure_type
                 runDir += '/Run'+str(num)
-                #print(str(runDir))
+                print(str(runDir))
                 xlsDir = f'{runDir}/data@1[{str(num)}].xls'  
                 try:
                     book = xlrd.open_workbook(xlsDir)
@@ -317,12 +318,31 @@ def sort(line, date_in, reso_dir):
                         write.writerow(['---'])
                         write.writerow([ln.comment])
                         write.writerow(['---'])
+                        titleRow = table.row_values(0)
                         for row_num in range(table.nrows):
                             row_value = table.row_values(row_num)
-                            write.writerow(row_value)
+                            if (isValidTableRow(row_value, titleRow)):  #skip incomplete data
+                                write.writerow(row_value)
                     print(f'MESSAGE: {file_name} is generated successfully. Ignore the warning.\n')
                 except:
                     print(f'ERROR: Error during CSV file generation for data@1[{str(num)}].xls.')
+
+
+#checks data in Sheet 1 of XLS file for corruption (unexpected blanks)
+def isValidTableRow(row, titleRow):
+    if (row == titleRow):
+        return True
+    #when part of a line is blank (not entire line), skip processing that line
+    else:
+        expectedColNum = len(titleRow)
+        actualColNum = len(row)  #same as expected
+        #count blank cells
+        for cell in row:
+            if (cell == ''):
+                actualColNum -= 1
+        if (actualColNum != expectedColNum):
+            return False
+    return True
  
 #parse lab manually populated log file AND raw data files to get information about raw data
 if __name__ == '__main__':

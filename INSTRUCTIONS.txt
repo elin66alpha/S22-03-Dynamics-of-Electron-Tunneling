@@ -37,6 +37,8 @@ Run Code
 	a. For <date>, can either write ONE date or `all`. Using one date will only run data in log file from that date.
 	   It also needs to match the string in the log file. 
 	   i.e. 02/11/2023 vs. 2/11/2023 matters.
+	   
+	b. Scan console output for any errors. An error either means the log file is not correct or you found a bug.   
 
   3. From the repo dir, run: (using Windows powershell)
 	`python $pwd/scripts/analysis/`

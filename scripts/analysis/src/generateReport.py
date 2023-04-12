@@ -297,7 +297,7 @@ def __getIccRonPlot(tmpDir, df) -> Image:
     fig = plt.figure(figsize=(10, 6),dpi=DEFAULT_DPI)
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
-    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red", edgewidth = 3)
+    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red", linewidth = LINE_WIDTH, s = 100)
     #sns.lineplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",estimator='max', color='black')
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
