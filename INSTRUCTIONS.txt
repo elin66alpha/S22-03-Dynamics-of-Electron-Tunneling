@@ -21,6 +21,8 @@ Limitations
 	3. Regarding lab, a log must be kept when doing the measurements. This maps information not stored in the raw data to information in the raw data, such as cell location(s) and probe setup to run number.	
 		a. Currently, any line in the log file that is invalid, such as having a blank run number, will output an error message then continue processing subsequent data.
 		b. Be sure to follow the appropriate guidelines for populating the log. 
+			1) A known issue regards the new 3-probe, or 3-terminal probe setup, set/reset/form operations. Since this may not behave as expected, populate the log file as you
+			would for a 2-terminal set/reset/form operation. For example, if you are setting the "probed" cell, which normally goes in the second cell location column for 3-probe measurements, put it in the first cell location column. 
 	  
 Run Code
   

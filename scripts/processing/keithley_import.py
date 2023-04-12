@@ -26,7 +26,13 @@ class LogRow:
         self.obs_cell_loc = line[5]
         self.run_num = line[6]
         self.comment = line[7]
-        
+    
+    #all valid cells in line are blank. aka ignore the legend.
+    def allBlank(self):
+        if (self.date  == '') and (self.wafer  == '') and (self.procedure_type  == '') and (self.array_loc  == '') and (self.heat_cell_loc  == '') and (self.obs_cell_loc  == '') and (self.run_num  == '') and (self.comment  == ''):
+            return True
+        return False
+    
     def getProcedureActivity(self):
         activity = ''
         if((self.procedure_type == 'R') or (self.procedure_type == 'R - O') or (self.procedure_type == 'R - H') or (self.procedure_type == 'RH') or (self.procedure_type == 'RP')):  #Reset
@@ -40,9 +46,10 @@ class LogRow:
         else:
             print("ERROR: Invalid activity value found in log file.")
         return activity
-   
-    #when a 2-terminal operation, but on probed/observed cell, not heated cell
-    #def onlyProbedCell(self):
+    
+    #for when want to print(LogRow_obj)
+    def getPrintableString(self):
+        return self.__dict__
 
 def remove_parenthesis(str):
     new_str = str.replace('(','')
@@ -75,6 +82,8 @@ def keithley_time(folder_name):
 
     return loc
 
+#does not contain thorough validity checking
+#contains error handling 
 #returns if CSV log file line is valid (True) or not (False)
 #input: LogRow object
 def check_blank_line(ln):
@@ -85,9 +94,15 @@ def check_blank_line(ln):
     #    cell_loc = ln.heat_cell_loc
     # end started to implement...
     
-    if (ln.procedure_type != ''):
-        if (ln.array_loc != '' and ln.heat_cell_loc !='' and ln.run_num !=''):
+    if (ln.allBlank()):  #ignore lines with blank cells simply because legend is longer than data to process
+        #skip line, no error
+        return False
+    elif (ln.procedure_type != ''):  #check for cells that must always be populated 
+        if (ln.array_loc != '' and ln.heat_cell_loc !='' and ln.run_num !=''):  #
             return True
+    
+    #treat every other case as an error
+    print(f'ERROR: Please check the lab note format, {ln.getPrintableString()} is either invalid or missing parameters.')
     return False
     
 # Input: integers    
@@ -121,9 +136,7 @@ def check_blank_cell(str):
 def sort(line, date_in, reso_dir):
     ln = LogRow(line)  #mapping
     lnValid = check_blank_line(ln)
-    if (not lnValid):
-        print(f'ERROR: please check the lab note format, {line} is either invalid or missing parameters')
-    else:
+    if (lnValid):
         #parse 
         if date_in == ln.date or date_in == 'all':
             #parse cell locations, error handling 

@@ -83,7 +83,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         Paragraph(f'——————————————————————————————————', styles["Heading2"]),
         ListFlowable(
             [
-                Paragraph(f"<b>Cell Size:</b> {cellSize}", styles["BodyText"]),
+                Paragraph(f"<b>Cell Size:</b> {cellSize} (not verified)", styles["BodyText"]),
                 Paragraph(f"<b>Times Accessed:</b> {timesAccessed}", styles["BodyText"]),
                 Paragraph(f"<b>Last Measurement:</b> {lastAccessed}", styles["BodyText"])
             ],

@@ -207,7 +207,7 @@ def __pdfGen(csvItemObjList: list([CsvFile]), summaryDict: dict, pdfDumpPath: st
             flowables.append(Paragraph("Three-probe terminal setup.", styles["BodyText"])) 
         else:    
             flowables.append(Paragraph("Two-probe terminal setup.", styles["BodyText"]))    
-        flowables.append(Paragraph(f"Activity (reset, set, form, or observe) = {csvObj.activity}", styles["BodyText"]))
+        flowables.append(Paragraph(f"Activity (reset, set, form, observe) = {csvObj.activity}", styles["BodyText"]))
         if csvObj.activity == 'observe':
             flowables.append(Paragraph("No ramp rate in sampling mode.", styles["BodyText"]))
         else:
