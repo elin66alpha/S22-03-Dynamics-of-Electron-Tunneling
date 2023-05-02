@@ -139,8 +139,44 @@ class CsvFile :
                 
                 plots['probe A plot'] = A_probe_plots
 
+<<<<<<< HEAD
             else :
                 plots['probe A plot'] = '<does not exist>'
+=======
+        if AProbeExists :
+            A_probe_plots        = plt.figure() 
+            A_probe_plots.subplots_adjust(wspace=0, hspace=0.45)
+            A_probe_plots.suptitle('Probe A plots', fontsize=16)
+
+            time_voltage_plot    = A_probe_plots.add_subplot(2, 1, 1)
+            time_current_plot    = time_voltage_plot.twinx()
+            voltage_current_plot = A_probe_plots.add_subplot(2, 1, 2)
+
+            time_voltage_plot.set_xlabel("Time (seconds)", fontsize='small')
+            time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
+            time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
+            time_voltage_plot.plot(self.timeAxis, self.probeA_voltage, color='red')
+            maxTime = max(int(self.timeAxis[-1])+1, 1)
+            time_voltage_plot.set_xticks(np.arange(0, int(maxTime), (maxTime)/10))
+            time_voltage_plot.set_yticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
+            time_voltage_plot.tick_params(axis='y', colors="red")
+
+            time_current_plot.set_xlabel("Time (seconds)", fontsize='small')
+            time_current_plot.set_ylabel("Current ($A$)", fontsize='small', color="blue")
+            time_current_plot.plot(self.timeAxis, self.probeA_current, color="blue")
+            time_current_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+            time_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
+            time_current_plot.tick_params(axis='y', colors="blue")
+
+            voltage_current_plot.set_xlabel("Voltage ($V$)", fontsize='small')
+            voltage_current_plot.set_ylabel("Current ($A$)", fontsize='small')
+            voltage_current_plot.set_title('Current against Voltage', fontsize='small', weight = 'bold')
+            voltage_current_plot.plot(self.probeA_voltage, self.probeA_current)
+            voltage_current_plot.set_xticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
+            voltage_current_plot.set_yticks(np.linspace(min(self.probeA_current), max(self.probeA_current), 5))
+
+            plots['probe A plot'] = A_probe_plots
+>>>>>>> c116c03f76947e99fb55b06113e67a35cca5fd95
 
             plots['probe B plot'] = '<does not exist>'
             

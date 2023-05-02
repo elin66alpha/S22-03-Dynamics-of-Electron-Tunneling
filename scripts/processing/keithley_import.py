@@ -314,6 +314,8 @@ def sort(line, date_in, reso_dir):
                     icc = icc_A  #WARNING: only sending icc for ONE cell
                     file_name = f'{position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}' 
                     with open(f'{reso_dir}processed_data/{file_name}.csv', 'w', encoding='utf-8') as f:
+                        if activity == 'observe':
+                            comment = "Observe Type: " + procedure_type + "; " + comment
                         write = csv.writer(f)
                         write.writerow(['---'])
                         write.writerow([ln.comment])
