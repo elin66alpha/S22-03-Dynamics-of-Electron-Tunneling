@@ -10,29 +10,18 @@ import shutil
 from dataclasses import dataclass
 import pandas
 from typing import Iterable, Dict, List, OrderedDict
-import math
+import math, copy
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, PageBreakIfNotEmpty, Table, ListFlowable, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, PageBreakIfNotEmpty, Table, ListFlowable
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import utils
 
 import src.CellAnalyzer as ca
 from src.utils.CsvFile import CsvFile
 
-defaultFontSize = 15
-titlePlotFontSize = 22
-axisLabelFontSize = 18
-LINE_WIDTH = 3  #pixel thickness
-
-#for poster image generation        
-#DEFAULT_DPI = 800  
-#PLOT_WIDTH = 600 
-#memory saver
-DEFAULT_DPI = 300  
-PLOT_WIDTH = 400
             
 # Name:			generateReport
 # Summary:		Generates a PDF file and outputs a pdf in the folder path.
@@ -83,7 +72,7 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         Paragraph(f'——————————————————————————————————', styles["Heading2"]),
         ListFlowable(
             [
-                Paragraph(f"<b>Cell Size:</b> {cellSize} (not verified)", styles["BodyText"]),
+                Paragraph(f"<b>Cell Size:</b> {cellSize}", styles["BodyText"]),
                 Paragraph(f"<b>Times Accessed:</b> {timesAccessed}", styles["BodyText"]),
                 Paragraph(f"<b>Last Measurement:</b> {lastAccessed}", styles["BodyText"])
             ],
@@ -107,8 +96,12 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         # put each operation on its own page
         #if i < len(items) - 1:
             #pages.append(PageBreakIfNotEmpty())
+            
+    defaultFontSize = 15
+    titlePlotFontSize = 22
+    axisLabelFontSize = 18
     
-    setfig = plt.figure(figsize=(12, 6), dpi=DEFAULT_DPI)
+    setfig = plt.figure(figsize=(12, 6), dpi=300)
     plt.rcParams.update({'font.size': defaultFontSize})
     ax = setfig.add_subplot(1, 1, 1)
     ax.set_title('Sets',fontsize = titlePlotFontSize)
@@ -127,26 +120,27 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
             labelString = f'{icc:.1f} μA'
             if cycle == 1:
                 labelString += ' (form)'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString, linewidth = LINE_WIDTH)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
             ax.legend(loc='best')
             if(not math.isnan(v) and v > 0.3):
                 setCount += 1
                 setSum += v
                 setSumSquared += v * v
-    if (setCount == 0):
-        print("\nMESSAGE: Due to cell having zero valid sets, expect its summary set data in Characteristics to be empty.\n")
-        mean = setSum
+
+    if setCount == 0:
+        mean = 0
         variance = 0
         stdDev = 0
     else:
         mean = setSum / setCount
         variance = setSumSquared / setCount - (mean * mean)
         stdDev = math.sqrt(variance)
+
         
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
 
-    resetfig = plt.figure(figsize=(12, 6), dpi=DEFAULT_DPI)
+    resetfig = plt.figure(figsize=(12, 6), dpi=300)
     plt.rcParams.update({'font.size': defaultFontSize})
     ax = resetfig.add_subplot(1, 1, 1)
     ax.set_title('Resets',fontsize = titlePlotFontSize)
@@ -156,19 +150,18 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
         if isinstance(reset, int) and ron < 10000 and r2 > 0.997:
             page = items[reset]
             labelString = f'{icc:.1f} μA'
-            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString, linewidth = LINE_WIDTH)
+            ax.plot(page.probeA_voltage, page.probeA_current, label = labelString,linewidth=3)
             ax.legend(loc='best')
     resetfig.savefig(f'{tmpDir}/resets.png')
 
 
     summaryTableFlowable = Table(summaryTable)
     flowables.append(summaryTableFlowable)
-    flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean}', styles['BodyText']))
-    flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev}', styles['BodyText']))
+    flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean:.2f}V', styles['BodyText']))
+    flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev:.2f}V', styles['BodyText']))
     flowables.append(__getIccRonPlot(tmpDir, df))
-    flowables.append(PageBreak())
-    flowables.append(__getImage(f'{tmpDir}/sets.png', PLOT_WIDTH))
-    flowables.append(__getImage(f'{tmpDir}/resets.png', PLOT_WIDTH))
+    flowables.append(__getImage(f'{tmpDir}/sets.png', 600))
+    flowables.append(__getImage(f'{tmpDir}/resets.png', 600))
     flowables.append(PageBreakIfNotEmpty())
 
     flowables += pages
@@ -201,7 +194,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     ]
     props = OrderedDict({
         'Time': page.timeStamp_time12hr,
-        'Icc': f'{page.complianceCurrent:.1e}{page.complianceCurrentUnits}',
+        'Icc': f'#{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
         'Voltage Range': f'{page.startVoltage}  →  {page.endVoltage}',
         'Target Ramp Rate': f'{page.rampRate}',
         'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
@@ -231,7 +224,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
             df.loc[stateIndex, 'Reset Data'] = i
         #test code not to be merged
         ca.plot_energy(page, df_calc, f'{tmpDir}/ca_plot_energy{i}.png')
-        flowables.append(__getImage(f'{tmpDir}/ca_plot_energy{i}.png', width=PLOT_WIDTH))
+        flowables.append(__getImage(f'{tmpDir}/ca_plot_energy{i}.png', width=400))
 
     else:
         # successful set/form
@@ -254,10 +247,16 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
             props['Error'] = 'Set ran on cell that was already set'
 
     cycle_complete = reset_cell
-
+    temp = df.loc[stateIndex, 'Set Icc']
+    props['Icc'] = f'{temp:.1f}μA'
     if cycle_complete:
         df.loc[len(df.index), 'Cycle'] = df.loc[stateIndex, 'Cycle'] + 1
-        summaryTable.append(df.loc[stateIndex])
+        summaryTable.append(copy.deepcopy(df.loc[stateIndex]))
+        summaryTable[len(df.index) - 1][1] = format(summaryTable[len(df.index) - 1][1],'.1f')
+        summaryTable[len(df.index) - 1][2] = format(summaryTable[len(df.index) - 1][2],'.2f')
+        summaryTable[len(df.index) - 1][3] = format(summaryTable[len(df.index) - 1][3],'.0f')
+        summaryTable[len(df.index) - 1][4] = format(summaryTable[len(df.index) - 1][4],'.5f')
+
 
     # add the properties as a bulleted list
     flowables.append(ListFlowable(
@@ -271,7 +270,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     # generate the plot
     plotName = f'{tmpDir}/ca_plot_{i}.png'
     ca.plot(page, df_calc, plotName)
-    flowables.append(__getImage(plotName, width=PLOT_WIDTH))
+    flowables.append(__getImage(plotName, width=400))
 
     return flowables
 
@@ -294,10 +293,10 @@ def __getImage(path, width=1):
 def __getIccRonPlot(tmpDir, df) -> Image:
     path = f"{tmpDir}/r_on_plot.png"
 
-    fig = plt.figure(figsize=(10, 6),dpi=DEFAULT_DPI)
+    fig = plt.figure(figsize=(10, 6),dpi=300)
     fig.patch.set_facecolor('white')
     #print(df.loc[df.R2 >= 0.98, ['Set Icc', 'R_on']])
-    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red", linewidth = LINE_WIDTH, s = 100)
+    sns.scatterplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",color = "red")
     #sns.lineplot(data=df.loc[df.R_on < 10000, :].loc[df.R2 >= 0.997 , ['Set Icc', 'R_on']], x="Set Icc", y="R_on",estimator='max', color='black')
     plt.title("Resistance")
     plt.xlabel("$I_{cc}$ [μA]")
@@ -305,4 +304,4 @@ def __getIccRonPlot(tmpDir, df) -> Image:
     plt.savefig(path)
     plt.close()
 
-    return __getImage(path, width=PLOT_WIDTH)
+    return __getImage(path, width=400)
