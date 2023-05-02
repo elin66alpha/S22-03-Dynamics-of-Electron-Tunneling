@@ -57,10 +57,16 @@ def remove_parenthesis(str):
     return new_str
 
 def find_min_max(table):
-    avmin = int(min(table.col_values(4 ,start_rowx=1)))  #verify this only skips header row
-    avmax = int(max(table.col_values(4, start_rowx=1)))
+    #when raw data is 2-terminal, but one terminal is ground probe, there are only 2 data columns in sheet 1 therefore only 1 voltages column.
+    if (table.ncols > 3):
+        avmin = int(min(table.col_values(4 ,start_rowx=1)))
+        avmax = int(max(table.col_values(4, start_rowx=1)))
+    else:
+        avmin = 0  #ground stays constant at 0 Volts
+        avmax = 0
     bvmin = int(min(table.col_values(2 ,start_rowx=1)))
     bvmax = int(max(table.col_values(2 ,start_rowx=1)))
+    
     vmin = min(avmin,bvmin)
     vmax = max(avmax,bvmax)
     return vmin,vmax
@@ -311,11 +317,13 @@ def sort(line, date_in, reso_dir):
                         vmin, vmax = find_min_max(table)
                     
                     #create/overwrite to csv file
+                    print("ONE")
                     icc = icc_A  #WARNING: only sending icc for ONE cell
                     file_name = f'{position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}' 
                     with open(f'{reso_dir}processed_data/{file_name}.csv', 'w', encoding='utf-8') as f:
                         if activity == 'observe':
-                            comment = "Observe Type: " + procedure_type + "; " + comment
+                            comment = "Observe Type: " + ln.procedure_type + "; " + comment
+                        print("TWO")
                         write = csv.writer(f)
                         write.writerow(['---'])
                         write.writerow([ln.comment])
