@@ -13,14 +13,52 @@ from xml.dom.minidom import Element, parse as parse_xml
 from datetime import datetime
 import pytz
 
+#maps excel cell numbers as per log file formatting standard
+#input: line/row of excel file 
+class LogRow:
+    def __init__(self, line):
+        #mapping
+        self.date = line[0]
+        self.wafer = line[1]
+        self.procedure_type = line[2]
+        self.array_loc = line[3]
+        self.heat_cell_loc = line[4]
+        self.obs_cell_loc = line[5]
+        self.run_num = line[6]
+        self.comment = line[7]
+    
+    #all valid cells in line are blank. aka ignore the legend.
+    def allBlank(self):
+        if (self.date  == '') and (self.wafer  == '') and (self.procedure_type  == '') and (self.array_loc  == '') and (self.heat_cell_loc  == '') and (self.obs_cell_loc  == '') and (self.run_num  == '') and (self.comment  == ''):
+            return True
+        return False
+    
+    def getProcedureActivity(self):
+        activity = ''
+        if((self.procedure_type == 'R') or (self.procedure_type == 'R - O') or (self.procedure_type == 'R - H') or (self.procedure_type == 'RH') or (self.procedure_type == 'RP')):  #Reset
+            activity = 'reset'
+        elif((self.procedure_type == 'S') or (self.procedure_type == 'S - O') or (self.procedure_type == 'S - H')) or (self.procedure_type == 'SH') or (self.procedure_type == 'SP'):  #Set
+            activity = 'set'
+        elif(self.procedure_type == 'F'):  #Form
+            activity = 'form'
+        elif(self.procedure_type == 'VS' or self.procedure_type == 'H'or self.procedure_type == 'C'):  #Observe is Verify_Set, Heating, and Cooling
+            activity = 'observe'
+        else:
+            print("ERROR: Invalid activity value found in log file.")
+        return activity
+    
+    #for when want to print(LogRow_obj)
+    def getPrintableString(self):
+        return self.__dict__
+
 def remove_parenthesis(str):
     new_str = str.replace('(','')
     new_str = new_str.replace(')','')
     return new_str
 
 def find_min_max(table):
-    avmin = int(min(table.col_values(4 ,start_rowx=1)))
-    avmax = int(max(table.col_values(4,start_rowx=1)))
+    avmin = int(min(table.col_values(4 ,start_rowx=1)))  #verify this only skips header row
+    avmax = int(max(table.col_values(4, start_rowx=1)))
     bvmin = int(min(table.col_values(2 ,start_rowx=1)))
     bvmax = int(max(table.col_values(2 ,start_rowx=1)))
     vmin = min(avmin,bvmin)
@@ -42,21 +80,30 @@ def keithley_time(folder_name):
     tz = pytz.timezone('US/Eastern')
     loc = d.astimezone(tz)
 
-    return loc
+    return loc    
 
+#does not contain thorough validity checking
+#contains error handling 
+#Refinement: move to class method
 #returns if CSV log file line is valid (True) or not (False)
-def check_blank_line(line):
-    procedure_type = line[2]
-    run_num = line[6]
-    array_loc = line[3]
-    cell_loc = line[4]
+#input: LogRow object
+def check_blank_line(ln):
+    # begin started to implement support for log file having 1st cell location always as heated, and 2nd cell location always as observed  
+    #cell_loc = ln.heat_cell_loc
     #if(cell_loc == ''):
-    #    line[4] = line[5]  #not correct, this is taking the second cell location as the first cell location, which is not right.
-    #    cell_loc = line[4]
-    if (procedure_type != ''):
-        if (array_loc != '' and cell_loc !='' and run_num !=''):
+    #    ln.heat_cell_loc = ln.obs_cell_loc  #takes the second cell location as the first cell location.
+    #    cell_loc = ln.heat_cell_loc
+    # end started to implement...
+    
+    if (ln.allBlank()):  #ignore lines with blank cells simply because legend is longer than data to process
+        #skip line, no error
+        return False
+    elif (ln.procedure_type != ''):  #check for cells that must always be populated 
+        if (ln.array_loc != '' and ln.heat_cell_loc !='' and ln.run_num !=''):  #
             return True
-    print(f'ERROR: please check the lab note format, {line} is either invalid or missing parameters')
+    
+    #treat every other case as an error
+    print(f'ERROR: Please check the lab note format, {ln.getPrintableString()} is either invalid or missing parameters.')
     return False
     
 # Input: integers    
@@ -88,30 +135,25 @@ def check_blank_cell(str):
     return changed_str
         
 def sort(line, date_in, reso_dir):
-    if(check_blank_line(line)):
-        #mapping
-        date = line[0]
-        wafer = line[1]
-        procedure_type = line[2]
-        array_loc = line[3]
-        heat_cell_loc = line[4]
-        obs_cell_loc = line[5]
-        run_num = line[6]
-        comment = line[7]
-    
+    ln = LogRow(line)  #mapping
+    lnValid = check_blank_line(ln)
+    if (lnValid):
         #parse 
-        if date_in == date or date_in == 'all':
-            #parse cell locations, error handling  
+        if date_in == ln.date or date_in == 'all':
+            #parse cell locations, error handling 
+            array_loc = ln.array_loc            
             loc = remove_parenthesis(array_loc).split(',')
             valid = isValidArrayLocation(int(loc[0]), int(loc[1]))
             if not valid:
                 print(f'ERROR: Encountered unexpected cell array coordinate {array_loc} in sort. Using placeholder (-1,-1) for CSV.')
                 array_loc = '-1,-1'
+            heat_cell_loc = ln.heat_cell_loc
             loc = remove_parenthesis(heat_cell_loc).split(',')
             valid = isValidCellLocation(int(loc[0]), int(loc[1]))
             if not valid:
                 print(f'ERROR: Encountered unexpected cell coordinate {heat_cell_loc} in sort. Using placeholder (-1,-1) for CSV.')
                 heat_cell_loc = '-1,-1'
+            obs_cell_loc = ln.obs_cell_loc
             if (obs_cell_loc != ''):  #obs cell can be empty and valid
                 loc = remove_parenthesis(obs_cell_loc).split(',')
                 valid = isValidCellLocation(int(loc[0]), int(loc[1]))
@@ -120,43 +162,33 @@ def sort(line, date_in, reso_dir):
                     obs_cell_loc = '-1,-1'
                 
             #parse activity
-            activity= ''
-            if((procedure_type == 'R') or (procedure_type == 'R - O') or (procedure_type == 'R - H') or (procedure_type == 'RH') or (procedure_type == 'RP')):  #Reset
-                activity = 'reset'
-            elif((procedure_type == 'S') or (procedure_type == 'S - O') or (procedure_type == 'S - H')) or (procedure_type == 'SH') or (procedure_type == 'SP'):  #Set
-                activity = 'set'
-            elif(procedure_type == 'F'):  #Form
-                activity = 'form'
-            elif(procedure_type == 'VS' or procedure_type == 'H'or procedure_type == 'C'):  #Observe is Verify_Set, Heating, and Cooling
-                activity = 'observe'
-            else:
-                print("ERROR: Invalid activity value found in log file.")
+            activity = ln.getProcedureActivity()
 
             #parse cell position
-            wafer = check_blank_cell(wafer)
+            wafer = check_blank_cell(ln.wafer)
             if(wafer == '?'):
                 wafer = '999'  #'?' causes errors in file open for csv! 
             else:
                 wafer = int(wafer)  #expect integer index 
-
+            #assume 3-probe/terminal when log file has both cell locations populated (when log file is correct)
             if(obs_cell_loc):
                 position = f'(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(heat_cell_loc)})_(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(obs_cell_loc)})'
             else:
                 position = f'(wafer{wafer},{remove_parenthesis(array_loc)},-1,-1,{remove_parenthesis(heat_cell_loc)})'
                 
             #parse runs
-            icc_A = '?'  #icc for one cell, for terminal A
-            icc_B = '?'  #icc for second cell
+            icc_A = ''  #icc for one cell, for terminal A
+            icc_B = ''  #icc for second cell
             isThreeProbe = False
             
-            run_num = run_num.split(',')
+            run_num = ln.run_num.split(',')
             
             for num in run_num:
                 num = str(num).replace(" ", "")  #remove spaces in list
                 
                 #parse excel workbook
                 runDir = f'{reso_dir}raw_data/'
-                runDir += procedure_type
+                runDir += ln.procedure_type
                 runDir += '/Run'+str(num)
                 print(str(runDir))
                 xlsDir = f'{runDir}/data@1[{str(num)}].xls'  
@@ -174,8 +206,10 @@ def sort(line, date_in, reso_dir):
                         # Sweeping - variable voltage, so ramp rate/step size valid
                     rr = ''
                     mode = settings.cell_value(2,1)  #B3
+                    rr_invalid = False
                     icc_row = -1
                     if (mode == "Sampling"):  #Step row does not exist!
+                        rr_invalid = True
                         rr = '0'  #step size is zero
                         icc_row = 18
                     elif (mode == "Sweeping"):
@@ -196,6 +230,7 @@ def sort(line, date_in, reso_dir):
                                     rr = B20
                     
                     #parse icc
+                    device_terminal_row = 12
                     if (numRows > 22):
                         nameExists = False  
                         iccExists = False
@@ -207,7 +242,7 @@ def sort(line, date_in, reso_dir):
                             
                         if (numCols > 3):  #3 probe
                             isThreeProbe = True
-                            if (settings.cell_value(icc_row,0) == "Compliance"):  #A19
+                            if (settings.cell_value(icc_row,0) == "Compliance"):
                                 #differenciate icc for the 2 cells 
                                 col_AV = -1
                                 col_BV = -1
@@ -229,26 +264,51 @@ def sort(line, date_in, reso_dir):
                             else:
                                 print(f'ERROR: Could not find Compliance in data@1[{str(num)}].xls.')
    
-                        elif (numCols > 2):  #2 probe
-                            if (settings.cell_value(icc_row,0) == "Compliance"):  #A22
-                                #terminal A and B will have same compliance
-                                icc_A = settings.cell_value(icc_row,1)  #B19, in amps, ex. 6e-05, ex. 0.003
-                                icc_B = icc_A
+                        elif (numCols > 2):  #2 probe means 1 cell so only looking for 1, any, Icc
+                            if (settings.cell_value(icc_row,0) == "Compliance"):
+                                #ID columns for terminal A, B, and C
+                                col_icc = -1
+                                B13 = settings.cell_value(device_terminal_row,1)
+                                C13 = settings.cell_value(device_terminal_row,2)
+                                candidates = [B13, C13]
+                                col_idx = 1
+                                for value in candidates:
+                                    if not (value == "C"):  #assume C is ground aka GNDU
+                                        if (value == "A") or (value == "B"):
+                                            col_icc = col_idx
+                                    #iterate
+                                    col_idx += 1
+                                #done
+                                icc_A = settings.cell_value(icc_row,col_icc)  #in amps, ex. 6e-05, ex. 0.003
+                                icc_B = settings.cell_value(icc_row,col_icc)
                             else:
                                 print (f'{settings.cell_value(icc_row,0)}')
                                 print(f'ERROR: Could not find Compliance in data@1[{str(num)}].xls.')
                         else:
                             print(f'ERROR: Unexpected data in data@1[{str(num)}].xls.')
-                    #convert icc
-                    icc_A = float(icc_A)  #use decimal.Decimal(icc) if seeing arithmetic error
-                    icc_B = float(icc_B)  #use decimal.Decimal(icc) if seeing arithmetic error
                     
+                    #convert icc
+                    if (icc_A == "N/A"):
+                        icc_A = 0
+                        print(f'WARNING: Grabbed N/A as terminal A Icc for data@1[{str(num)}].xls.')
+                    else:
+                        icc_A = float(icc_A)  #use decimal.Decimal(icc) if seeing arithmetic error
+                    if (icc_B == "N/A"):
+                        icc_B = 0
+                        print(f'WARNING: Grabbed N/A as terminal B Icc for data@1[{str(num)}].xls.')
+                    else:
+                        icc_B = float(icc_B)  #use decimal.Decimal(icc) if seeing arithmetic error
+
                     #parse time
                     time = keithley_time(runDir)
                     time = time.strftime(r'%y%m%d%H%M%S')
-
-                    #parse vmin, vmax
-                    vmin, vmax = find_min_max(table)
+                    
+                    #parse vmin, vmax,, only valid when rr valid 
+                    if (rr_invalid):
+                        vmin = 0
+                        vmax = 0
+                    else:
+                        vmin, vmax = find_min_max(table)
                     
                     #create/overwrite to csv file
                     icc = icc_A  #WARNING: only sending icc for ONE cell
@@ -258,14 +318,33 @@ def sort(line, date_in, reso_dir):
                             comment = "Observe Type: " + procedure_type + "; " + comment
                         write = csv.writer(f)
                         write.writerow(['---'])
-                        write.writerow([comment])
+                        write.writerow([ln.comment])
                         write.writerow(['---'])
+                        titleRow = table.row_values(0)
                         for row_num in range(table.nrows):
                             row_value = table.row_values(row_num)
-                            write.writerow(row_value)
-                    print(f'MESSAGE: {file_name} is generated successfully. Ignore the warning.')
+                            if (isValidTableRow(row_value, titleRow)):  #skip incomplete data
+                                write.writerow(row_value)
+                    print(f'MESSAGE: {file_name} is generated successfully. Ignore the warning.\n')
                 except:
                     print(f'ERROR: Error during CSV file generation for data@1[{str(num)}].xls.')
+
+
+#checks data in Sheet 1 of XLS file for corruption (unexpected blanks)
+def isValidTableRow(row, titleRow):
+    if (row == titleRow):
+        return True
+    #when part of a line is blank (not entire line), skip processing that line
+    else:
+        expectedColNum = len(titleRow)
+        actualColNum = len(row)  #same as expected
+        #count blank cells
+        for cell in row:
+            if (cell == ''):
+                actualColNum -= 1
+        if (actualColNum != expectedColNum):
+            return False
+    return True
  
 #parse lab manually populated log file AND raw data files to get information about raw data
 if __name__ == '__main__':
