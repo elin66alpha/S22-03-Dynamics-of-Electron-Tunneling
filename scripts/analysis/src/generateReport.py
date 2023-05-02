@@ -10,7 +10,7 @@ import shutil
 from dataclasses import dataclass
 import pandas
 from typing import Iterable, Dict, List, OrderedDict
-import math
+import math, copy
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -126,22 +126,16 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
                 setCount += 1
                 setSum += v
                 setSumSquared += v * v
-    try:
+
+    if setCount == 0:
+        mean = 0
+        variance = 0
+        stdDev = 0
+    else:
         mean = setSum / setCount
         variance = setSumSquared / setCount - (mean * mean)
         stdDev = math.sqrt(variance)
-    except:
-        print("\nWARNING: Error during cell summary set mean and standard deviation calculations in generateReport.py.")
-        if (setCount == 0):
-            print("Due to cell having zero valid sets.\n")
-            mean = setSum
-            variance = 0
-            stdDev = 0
-        else:
-            print("")  #endline
-            mean = 0
-            variance = 0
-            stdDev = 0
+
         
     #ax.legend(loc='best')
     setfig.savefig(f'{tmpDir}/sets.png')
@@ -163,8 +157,8 @@ def generateReport(csvItems: List[CsvFile], summaryDict: Dict[str, object], pdfF
 
     summaryTableFlowable = Table(summaryTable)
     flowables.append(summaryTableFlowable)
-    flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean}', styles['BodyText']))
-    flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev}', styles['BodyText']))
+    flowables.append(Paragraph(f'<b>Mean Set Voltage:</b> {mean:.2f}V', styles['BodyText']))
+    flowables.append(Paragraph(f'<b>Std Deviation:</b> {stdDev:.2f}V', styles['BodyText']))
     flowables.append(__getIccRonPlot(tmpDir, df))
     flowables.append(__getImage(f'{tmpDir}/sets.png', 600))
     flowables.append(__getImage(f'{tmpDir}/resets.png', 600))
@@ -200,7 +194,7 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
     ]
     props = OrderedDict({
         'Time': page.timeStamp_time12hr,
-        'Icc': f'{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
+        'Icc': f'#{page.complianceCurrent:.1f}{page.complianceCurrentUnits}',
         'Voltage Range': f'{page.startVoltage}  →  {page.endVoltage}',
         'Target Ramp Rate': f'{page.rampRate}',
         'True Ramp Rate': f'{ca.calcRampRate(page, df_calc):.3f} V/s*',
@@ -253,10 +247,16 @@ def __generatePage(page: CsvFile, i: int, tmpDir, df, summaryTable) -> List:
             props['Error'] = 'Set ran on cell that was already set'
 
     cycle_complete = reset_cell
-
+    temp = df.loc[stateIndex, 'Set Icc']
+    props['Icc'] = f'{temp:.1f}μA'
     if cycle_complete:
         df.loc[len(df.index), 'Cycle'] = df.loc[stateIndex, 'Cycle'] + 1
-        summaryTable.append(df.loc[stateIndex])
+        summaryTable.append(copy.deepcopy(df.loc[stateIndex]))
+        summaryTable[len(df.index) - 1][1] = format(summaryTable[len(df.index) - 1][1],'.1f')
+        summaryTable[len(df.index) - 1][2] = format(summaryTable[len(df.index) - 1][2],'.2f')
+        summaryTable[len(df.index) - 1][3] = format(summaryTable[len(df.index) - 1][3],'.0f')
+        summaryTable[len(df.index) - 1][4] = format(summaryTable[len(df.index) - 1][4],'.5f')
+
 
     # add the properties as a bulleted list
     flowables.append(ListFlowable(
