@@ -103,7 +103,8 @@ class CsvFile :
             time_voltage_plot.set_ylabel("Voltage ($V$)", fontsize='small', color='red')
             time_voltage_plot.set_title("Voltage and Current against Time", fontsize='small', weight = 'bold')
             time_voltage_plot.plot(self.timeAxis, self.probeA_voltage, color='red')
-            time_voltage_plot.set_xticks(np.arange(0, int(max(self.timeAxis))+1, 1))
+            maxTime = max(int(self.timeAxis[-1])+1, 1)
+            time_voltage_plot.set_xticks(np.arange(0, int(maxTime), (maxTime)/10))
             time_voltage_plot.set_yticks(np.linspace(min(self.probeA_voltage), max(self.probeA_voltage), 5))
             time_voltage_plot.tick_params(axis='y', colors="red")
 
