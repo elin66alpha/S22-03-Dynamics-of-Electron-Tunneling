@@ -317,13 +317,11 @@ def sort(line, date_in, reso_dir):
                         vmin, vmax = find_min_max(table)
                     
                     #create/overwrite to csv file
-                    print("ONE")
                     icc = icc_A  #WARNING: only sending icc for ONE cell
                     file_name = f'{position}_{time}_{activity}_{vmin}_{vmax}_{rr}_{icc}' 
                     with open(f'{reso_dir}processed_data/{file_name}.csv', 'w', encoding='utf-8') as f:
                         if activity == 'observe':
-                            comment = "Observe Type: " + ln.procedure_type + "; " + comment
-                        print("TWO")
+                            ln.comment = "Observe Type: " + ln.procedure_type + "; " + ln.comment
                         write = csv.writer(f)
                         write.writerow(['---'])
                         write.writerow([ln.comment])
