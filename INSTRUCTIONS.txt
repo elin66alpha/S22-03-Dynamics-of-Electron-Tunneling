@@ -31,7 +31,9 @@ Run Code
   
   2. Copy raw data, following instructions in /resources/raw_data/README.md
   
-  3. From the repo dir, run: (using Windows powershell)
+  3. [optional] Clear (delete) any older CSVs in /resources/processed_data/.
+  
+  4. From the repo dir, run: (using Windows powershell)
 	`python $pwd/scripts/processing/keithley_import.py <your_log_file_name_without_extension> <date>`
 	
 	a. For <date>, can either write ONE date or `all`. Using one date will only run data in log file from that date.
@@ -40,7 +42,7 @@ Run Code
 	   
 	b. Scan console output for any errors. An error either means the log file is not correct or you found a bug.   
 
-  3. From the repo dir, run: (using Windows powershell)
+  5. From the repo dir, run: (using Windows powershell)
 	`python $pwd/scripts/analysis/`
 	
-  4. Done! Report is generated in /resources/analysis_reports/
+  6. Done! Report is generated in /resources/analysis_reports/
