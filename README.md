@@ -21,16 +21,16 @@ To capture (measure) aforementioned unexpected behavior, then explore limits of 
 ## Overview
 This repo serves to make data analysis and its interactions efficient. Thus, increasing the efficiency of both data collection and review.
 
+### Procedure
+1. Process raw measurement data.
+2. Analyze/plot processed measurement data.
+
 ## Deliverables
 Access our lab data as well as our prototype demo, final report, and final presentation.
 
 > A select few useful files from the previous team's project are included as well.
 
 [Shared Google Drive Folder](https://drive.google.com/drive/folders/1YQwwkOD5amScoItEXIsIPebYARKblTwj?usp=sharing)
-
-### Procedure
-1. Process raw measurement data.
-2. Analyze/plot processed measurement data.
 
 ## Instructions
 > For detailed instructions on how to use this repo to analyze measurement data, see `INSTRUCTIONS.txt`.
