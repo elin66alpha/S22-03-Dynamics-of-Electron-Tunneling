@@ -14,3 +14,5 @@ Date,"Wafer (Index, ex. 0)",Procedure Type,"Array Location (ex. (0,0))",Cell Loc
 ,,,,,,,,Form,Form,F
 ,,,,,,,,,,
 *THIS FILE CONTAINS MADE-UP EXAMPLE DATA; IT CANNOT BE PROCESSED.,,,,,,,,,,
+,,,,,,,,,,
+"**IF THE DATA IS TWO-TERMINAL, ONLY POPULATE CELL LOCATION 1 COLUMN. ELSE, POPULATE BOTH CELL LOCATION COLUMNS.",,,,,,,,,,
