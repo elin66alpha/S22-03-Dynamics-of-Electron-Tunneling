@@ -7,4 +7,4 @@ seaborn
 tqdm
 xlrd
 pytz
-
+dataclasses

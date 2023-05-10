@@ -2,8 +2,6 @@
 # Summary:		External use guidelines.
 # Desc:			Contains what anyone needs to know in order to analyze measurement data (use the code).
 #
-#				WINDOWS VERFIED ONLY.
-#
 #				Due to differences in file formatting, such as indents, Notepad++ is recommended when viewing both scripts and guidelines.
 
 INSTRUCTIONS
@@ -26,13 +24,16 @@ Limitations
 	  
 Run Code
   
-  1. If not already installed, run: 
-	 `pip install -r requirements.txt`
+  1. [one-time] Make sure you have Python v3.7 or greater installed, then run `pip install -r requirements.txt`.
   
   2. Copy raw data, following instructions in /resources/raw_data/README.md
   
-  3. From the repo dir, run: (using Windows powershell)
-	`python $pwd/scripts/processing/keithley_import.py <your_log_file_name_without_extension> <date>`
+  3. [optional] Clear (delete) any older CSVs in /resources/processed_data/.
+  
+  4. `cd '.../S22-03-Dynamics-of-Electron-Tunneling'` As, the following commands need to be ran from your repo dir.
+  
+  5. Windows Powershell: `python $pwd/scripts/processing/keithley_import.py <your_log_file_name_without_extension> <date>`
+	 Linux: `python3 ~/.../scripts/processing/keithley_import.py <your_log_file_name_without_extension> <date>`
 	
 	a. For <date>, can either write ONE date or `all`. Using one date will only run data in log file from that date.
 	   It also needs to match the string in the log file. 
@@ -40,7 +41,7 @@ Run Code
 	   
 	b. Scan console output for any errors. An error either means the log file is not correct or you found a bug.   
 
-  3. From the repo dir, run: (using Windows powershell)
-	`python $pwd/scripts/analysis/`
+  6. Windows Powershell: `python $pwd/scripts/analysis/`
+	 Linux: `python3 ~/.../scripts/analysis/` 
 	
-  4. Done! Report is generated in /resources/analysis_reports/
+  7. Done! Report is generated in /resources/analysis_reports/
